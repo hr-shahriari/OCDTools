@@ -25,3 +25,12 @@ C:\grasshopperDev\OCDTools\DupComponent\OCDTools\obj\Debug\net48\OCD_Tools.Assem
 C:\grasshopperDev\OCDTools\DupComponent\OCDTools\obj\Debug\net48\OCD_Tools.csproj.CoreCompileInputs.cache
 C:\grasshopperDev\OCDTools\DupComponent\OCDTools\obj\Debug\net48\OCD_Tools.gha
 C:\grasshopperDev\OCDTools\DupComponent\OCDTools\obj\Debug\net48\OCD_Tools.pdb
+C:\grasshopperDev\OCDTools\OCDTools\bin\Debug\net48\OCD_Tools.gha
+C:\grasshopperDev\OCDTools\OCDTools\bin\Debug\net48\OCD_Tools.pdb
+C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.csproj.AssemblyReference.cache
+C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.GeneratedMSBuildEditorConfig.editorconfig
+C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.AssemblyInfoInputs.cache
+C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.AssemblyInfo.cs
+C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.csproj.CoreCompileInputs.cache
+C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.gha
+C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.pdb

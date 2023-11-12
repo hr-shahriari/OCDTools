@@ -11,6 +11,7 @@ using Grasshopper.Kernel.Undo.Actions;
 using Grasshopper.Kernel.Parameters;
 using Rhino.UI;
 using System.Runtime.Remoting.Messaging;
+using System.Collections;
 
 namespace OCD_Tools
 {
@@ -103,7 +104,23 @@ namespace OCD_Tools
                 documentIO.Document.TranslateObjects(new Size(0, sWidth + sHeight), false);
                 documentIO.Document.SelectAll();
                 documentIO.Document.MutateAllIds();
+                var objects =  documentIO.Document.Objects;
+                List<IGH_Param> paramsList = new List<IGH_Param>();
+                foreach (IGH_Component ighComponent in ((IEnumerable)objects.Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_Component))).Cast<IGH_Component>().ToList<IGH_Component>())
+                {
+                    paramsList.AddRange((IEnumerable<IGH_Param>)ighComponent.Params.Input);
+                    foreach (var input in ighComponent.Params.Input)
+                    {
+                        input.RemoveAllSources();
+                       
+                    }
 
+                }
+                //foreach (IGH_Param ighParam in paramsList)
+                //{
+                   
+                //    ighParam.RemoveAllSources();
+                //}
                 GrasshopperDocument.DeselectAll();
                 GrasshopperDocument.MergeDocument(documentIO.Document);
 
