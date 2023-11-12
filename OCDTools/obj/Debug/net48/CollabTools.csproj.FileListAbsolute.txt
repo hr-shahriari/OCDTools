@@ -1,0 +1,9 @@
+C:\grasshopperDev\Testing\DupComponent\MyGrasshopperAssembly1\obj\Debug\net48\CollabTools.csproj.AssemblyReference.cache
+C:\grasshopperDev\Testing\DupComponent\MyGrasshopperAssembly1\obj\Debug\net48\CollabTools.GeneratedMSBuildEditorConfig.editorconfig
+C:\grasshopperDev\Testing\DupComponent\MyGrasshopperAssembly1\obj\Debug\net48\CollabTools.AssemblyInfoInputs.cache
+C:\grasshopperDev\Testing\DupComponent\MyGrasshopperAssembly1\obj\Debug\net48\CollabTools.AssemblyInfo.cs
+C:\grasshopperDev\Testing\DupComponent\MyGrasshopperAssembly1\obj\Debug\net48\CollabTools.csproj.CoreCompileInputs.cache
+C:\grasshopperDev\Testing\DupComponent\MyGrasshopperAssembly1\bin\Debug\net48\CollabTools.gha
+C:\grasshopperDev\Testing\DupComponent\MyGrasshopperAssembly1\bin\Debug\net48\CollabTools.pdb
+C:\grasshopperDev\Testing\DupComponent\MyGrasshopperAssembly1\obj\Debug\net48\CollabTools.gha
+C:\grasshopperDev\Testing\DupComponent\MyGrasshopperAssembly1\obj\Debug\net48\CollabTools.pdb

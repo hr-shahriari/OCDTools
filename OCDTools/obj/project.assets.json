@@ -1,0 +1,139 @@
+{
+  "version": 3,
+  "targets": {
+    ".NETFramework,Version=v4.8": {
+      "Grasshopper/6.12.19029.6381": {
+        "type": "package",
+        "dependencies": {
+          "RhinoCommon": "[6.12.19029.6381]"
+        },
+        "compile": {
+          "lib/net45/GH_IO.dll": {
+            "related": ".XML"
+          },
+          "lib/net45/Grasshopper.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net45/_._": {
+            "related": ".XML"
+          }
+        },
+        "build": {
+          "build/net45/Grasshopper.targets": {}
+        }
+      },
+      "RhinoCommon/6.12.19029.6381": {
+        "type": "package",
+        "compile": {
+          "lib/net45/Eto.dll": {
+            "related": ".xml"
+          },
+          "lib/net45/Rhino.UI.dll": {},
+          "lib/net45/RhinoCommon.dll": {
+            "related": ".XML"
+          }
+        },
+        "runtime": {
+          "lib/net45/_._": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/net45/RhinoCommon.targets": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Grasshopper/6.12.19029.6381": {
+      "sha512": "W98SCvKikWGpWtIxL9VAE5M2jBBFDVZvX0xWnJ2wdVTX05dOXLZ55gz2E1rbSlzTXSGwAi+aKsg4/pKewFd8gw==",
+      "type": "package",
+      "path": "grasshopper/6.12.19029.6381",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "build/net45/Grasshopper.targets",
+        "grasshopper.6.12.19029.6381.nupkg.sha512",
+        "grasshopper.nuspec",
+        "lib/net45/GH_IO.XML",
+        "lib/net45/GH_IO.dll",
+        "lib/net45/Grasshopper.dll",
+        "lib/net45/Grasshopper.xml"
+      ]
+    },
+    "RhinoCommon/6.12.19029.6381": {
+      "sha512": "BcUrws+8VC6dCFORtFpsdKLBT4aQIGN8O991u+5V9YyeJT9lgl+2IFTsPN/QiXLPbNoCUcv3R5ENGAfT14LQtQ==",
+      "type": "package",
+      "path": "rhinocommon/6.12.19029.6381",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Eto-LICENSE.txt",
+        "build/net45/RhinoCommon.targets",
+        "lib/net45/Eto.dll",
+        "lib/net45/Eto.xml",
+        "lib/net45/Rhino.UI.dll",
+        "lib/net45/RhinoCommon.XML",
+        "lib/net45/RhinoCommon.dll",
+        "rhinocommon.6.12.19029.6381.nupkg.sha512",
+        "rhinocommon.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    ".NETFramework,Version=v4.8": [
+      "Grasshopper >= 6.12.19029.6381"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\Hamidreza\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\grasshopperDev\\OCDTools\\OCDTools\\OCD_Tools.csproj",
+      "projectName": "OCD_Tools",
+      "projectPath": "C:\\grasshopperDev\\OCDTools\\OCDTools\\OCD_Tools.csproj",
+      "packagesPath": "C:\\Users\\Hamidreza\\.nuget\\packages\\",
+      "outputPath": "C:\\grasshopperDev\\OCDTools\\OCDTools\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\Hamidreza\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net48"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net48": {
+          "targetAlias": "net48",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net48": {
+        "targetAlias": "net48",
+        "dependencies": {
+          "Grasshopper": {
+            "include": "Compile, Build",
+            "target": "Package",
+            "version": "[6.12.19029.6381, )"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.101\\RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}
