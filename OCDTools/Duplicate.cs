@@ -89,10 +89,13 @@ namespace OCD_Tools
 
         internal static void DuplicateComponent(GH_Document GrasshopperDocument, List<IGH_DocumentObject> ighDocumentObjects)
         {
+            List<Guid> newObjectIDs = new List<Guid>();
+            var newDocumentIO = new GH_DocumentIO();
             foreach (var ighDocumentObject in ighDocumentObjects)
             {
                 var guid = new List<Guid>();
                 guid.Add(ighDocumentObject.InstanceGuid);
+
                 IGH_Attributes att = ighDocumentObject.Attributes;
                 RectangleF bounds = att.Bounds;
                 int sHeight = (int)Math.Round(bounds.Height);
@@ -105,6 +108,10 @@ namespace OCD_Tools
                 documentIO.Document.SelectAll();
                 documentIO.Document.MutateAllIds();
                 var objects =  documentIO.Document.Objects;
+                foreach (var _object in objects)
+                {
+                    newObjectIDs.Add(_object.InstanceGuid);
+                }
                 List<IGH_Param> paramsList = new List<IGH_Param>();
                 foreach (IGH_Component ighComponent in ((IEnumerable)objects.Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_Component))).Cast<IGH_Component>().ToList<IGH_Component>())
                 {
@@ -116,16 +123,11 @@ namespace OCD_Tools
                     }
 
                 }
-                //foreach (IGH_Param ighParam in paramsList)
-                //{
-                   
-                //    ighParam.RemoveAllSources();
-                //}
+                newDocumentIO = documentIO;
                 GrasshopperDocument.DeselectAll();
                 GrasshopperDocument.MergeDocument(documentIO.Document);
-
-
             }
+            RecordUndoAction(GrasshopperDocument, newObjectIDs, newDocumentIO);
         }
     }
 }
