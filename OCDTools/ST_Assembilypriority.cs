@@ -9,8 +9,13 @@ using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
 
+
 namespace OCD_Tools
 {
+    /// <summary>
+    /// Source example for this code that I used to make this form can be found here:
+    /// https://discourse.mcneel.com/t/mac-compatible-way-to-add-editor-menus/106521
+    /// </summary>
     public class ST_AssemblyPriority : GH_AssemblyPriority
     {
 
@@ -115,6 +120,10 @@ namespace OCD_Tools
         {
             GH_Document document = Instances.ActiveCanvas.Document;
             if (document.SelectedObjects().Count == 0)
+            {
+                int num = (int)MessageBox.Show("To use this feature, first select a component.");
+            }
+            else if (document.SelectedObjects().OfType<GH_Group>().Any())
             {
                 int num = (int)MessageBox.Show("To use this feature, first select a component.");
             }
