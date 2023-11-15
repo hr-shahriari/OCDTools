@@ -34,3 +34,5 @@ C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.AssemblyInfo.cs
 C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.csproj.CoreCompileInputs.cache
 C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.gha
 C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.pdb
+C:\grasshopperDev\OCDTools\OCDTools\bin\Debug\net48\ScriptComponents.dll
+C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.csproj.CopyComplete
