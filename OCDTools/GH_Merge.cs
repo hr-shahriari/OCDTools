@@ -13,6 +13,8 @@ namespace OCD_Tools
 {
     public class GH_Merge : GH_Component, IGH_VariableParameterComponent
     {
+        internal bool SimplifyAll { get; set; }
+        internal bool FlattenAll { get; set; }
         /// <summary>
         /// Initializes a new instance of the Merge class.
         /// </summary>
@@ -131,16 +133,34 @@ namespace OCD_Tools
 
         protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
         {
-            Menu_AppendItem(menu, "Simplify All", Flatten_All_Clicked);
-            //Menu_AppendItem(menu, "Lock Outputs", Menu_LockOutputs_Clicked, true, StructureLocked);
+            Menu_AppendItem(menu, "Simplify All", Simplify_All_Clicked,true, SimplifyAll);
+            Menu_AppendItem(menu, "Flatten All", Flatten_All_Clicked, true, FlattenAll);
+
             base.AppendAdditionalComponentMenuItems(menu);
+        }
+
+        private void Simplify_All_Clicked(object sender, EventArgs e)
+        {
+            SimplifyAll = !SimplifyAll;
+            foreach (var param in this.Params.Input)
+            {
+                param.Simplify = SimplifyAll;
+            }
         }
 
         private void Flatten_All_Clicked(object sender, EventArgs e)
         {
+            FlattenAll = !FlattenAll;
             foreach (var param in this.Params.Input)
             {
-                param.Simplify = true;
+                if (FlattenAll)
+                {
+                    param.DataMapping = GH_DataMapping.Flatten;
+                }
+                else
+                {
+                    param.DataMapping = GH_DataMapping.None;
+                }
             }
         }
 
