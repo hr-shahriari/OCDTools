@@ -146,6 +146,19 @@ namespace OCD_Tools
             {
                 param.Simplify = SimplifyAll;
             }
+            if (FlattenAll && SimplifyAll)
+            {
+                this.Message = "Flattend/Simplified";
+            }
+            else if (SimplifyAll)
+            {
+                this.Message = "Simplifed";
+            }
+            else
+            {
+                this.Message = "";
+            }
+            this.ExpireSolution(true);
         }
 
         private void Flatten_All_Clicked(object sender, EventArgs e)
@@ -161,6 +174,20 @@ namespace OCD_Tools
                 {
                     param.DataMapping = GH_DataMapping.None;
                 }
+                if (FlattenAll && SimplifyAll)
+                {
+                    this.Message = "Flattend/Simplified";
+                }
+
+                else if (FlattenAll)
+                {
+                    this.Message = "Flattend";
+                }
+                else
+                {
+                    this.Message = "";
+                }
+                this.ExpireSolution(true);
             }
         }
 
