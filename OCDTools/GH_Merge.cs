@@ -5,7 +5,9 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Types;
+using System.Windows.Forms;
 using Rhino.Geometry;
+using System.Runtime.CompilerServices;
 
 namespace OCD_Tools
 {
@@ -95,21 +97,54 @@ namespace OCD_Tools
 
         public void VariableParameterMaintenance()
         {
-            int num = checked(this.Params.Input.Count - 1);
-            int index = 0;
-            while (index <= num)
+            //int num = checked(this.Params.Input.Count - 1);
+            //int index = 0;
+            //while (index <= num)
+            //{
+
+            //    this.Params.Input[index].Name = string.Format("Data {0}", (object)checked(index + 1));
+            //    this.Params.Input[index].NickName = string.Format("D{0}", (object)checked(index + 1));
+            //    this.Params.Input[index].Description = string.Format("Data stream {0}", (object)checked(index + 1));
+            //    this.Params.Input[index].Optional = true;
+            //    this.Params.Input[index].MutableNickName = false;
+            //    this.Params.Input[index].Access = GH_ParamAccess.tree;
+            //    checked { ++index; }
+            //}
+            int num = this.Params.Input.Count;
+            for (int index = 0; index < num; index++)
             {
-                this.Params.Input[index].Name = string.Format("Data {0}", (object)checked(index + 1));
-                this.Params.Input[index].NickName = string.Format("D{0}", (object)checked(index + 1));
-                this.Params.Input[index].Description = string.Format("Data stream {0}", (object)checked(index + 1));
-                this.Params.Input[index].Optional = true;
-                this.Params.Input[index].MutableNickName = false;
-                this.Params.Input[index].Access = GH_ParamAccess.tree;
-                checked { ++index; }
+                if (this.Params.Input[index].SourceCount == 0)
+                {
+                    this.Params.Input[index].Name = $"Data {index + 1}";
+                    this.Params.Input[index].NickName = $"D{index + 1}";
+                    this.Params.Input[index].Description = $"Data stream {index + 1}";
+                    this.Params.Input[index].Optional = true;
+                    this.Params.Input[index].MutableNickName = false;
+                    this.Params.Input[index].Access = GH_ParamAccess.tree;
+                }
+                else
+                {
+                    continue;
+                }
             }
         }
 
-        private void AutoCreateOutputs(bool recompute, int number)
+        protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+        {
+            Menu_AppendItem(menu, "Simplify All", Flatten_All_Clicked);
+            //Menu_AppendItem(menu, "Lock Outputs", Menu_LockOutputs_Clicked, true, StructureLocked);
+            base.AppendAdditionalComponentMenuItems(menu);
+        }
+
+        private void Flatten_All_Clicked(object sender, EventArgs e)
+        {
+            foreach (var param in this.Params.Input)
+            {
+                param.Simplify = true;
+            }
+        }
+
+        internal void AutoCreateOutputs(bool recompute, int number)
         {
 
             RecordUndoEvent("Input from params");

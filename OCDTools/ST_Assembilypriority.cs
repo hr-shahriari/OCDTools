@@ -65,7 +65,7 @@ namespace OCD_Tools
         // Create sub-items for 'Lazy Tools'
         ToolStripMenuItem duplicateGroup;
         ToolStripMenuItem duplicateComponent;
-        ToolStripMenuItem item3;
+        ToolStripMenuItem mergedInputs;
 
         private List<ToolStripMenuItem> OCDMenuItems
         {
@@ -75,13 +75,14 @@ namespace OCD_Tools
                 List<ToolStripMenuItem> list = new List<ToolStripMenuItem>();
                 duplicateGroup = new ToolStripMenuItem("Duplicate Groups");
                 duplicateComponent = new ToolStripMenuItem("Duplicate Component");
-                item3 = new ToolStripMenuItem("Tool 3");
+                mergedInputs = new ToolStripMenuItem("Get Merged Inputs");
                 // Assign event handlers for the menu items (assuming you have methods to handle these)
                 duplicateGroup.Click += new EventHandler(this.DuplicateGroup_Click);
                 duplicateComponent.Click += new EventHandler(this.DuplicateComponent_Click);
-                //item3.Click += (sender, args) => { /* Your code here */ };
+                mergedInputs.Click += new EventHandler(this.GetMergedInputs_Click);
                 list.Add(duplicateGroup);
                 list.Add(duplicateComponent);
+                list.Add(mergedInputs);
                 return list;
             }
         }
@@ -101,6 +102,7 @@ namespace OCD_Tools
         {
             e.AppendItem(this.duplicateGroup);
             e.AppendItem(this.duplicateComponent);
+            e.AppendItem(this.mergedInputs);
         }
         private void DuplicateGroup_Click(object sender, EventArgs e)
         {
@@ -131,6 +133,26 @@ namespace OCD_Tools
             {
                 List<IGH_DocumentObject> list = ((IEnumerable)((IEnumerable<IGH_DocumentObject>)document.SelectedObjects()).Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_DocumentObject))).Cast<IGH_DocumentObject>().ToList<IGH_DocumentObject>();
                 Duplicate.DuplicateComponent(document, list);
+                document.ScheduleSolution(4);
+            }
+
+        }
+
+        private void GetMergedInputs_Click(object sender, EventArgs e)
+        {
+            GH_Document document = Instances.ActiveCanvas.Document;
+            if (document.SelectedObjects().Count == 0)
+            {
+                int num = (int)MessageBox.Show("To use this feature, first select a component.");
+            }
+            else if (document.SelectedObjects().OfType<GH_Group>().Any())
+            {
+                int num = (int)MessageBox.Show("To use this feature, first select a component.");
+            }
+            else
+            {
+                List<IGH_Component> list = ((IEnumerable)((IEnumerable<IGH_DocumentObject>)document.SelectedObjects()).Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_DocumentObject))).Cast<IGH_Component>().ToList<IGH_Component>();
+                MergeInputs.Merge(document, list);
                 document.ScheduleSolution(4);
             }
 
