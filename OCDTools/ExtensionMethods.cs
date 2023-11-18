@@ -10,12 +10,11 @@ namespace OCD_Tools
 {
     public static class ExtensionMethods
     {
-        public static void UpdateNumberOfInputs(this GH_Component component)
+        public static void UpdateNumberOfInputs(this GH_Component component, int numberOfSources)
         {
             if (component is IGH_VariableParameterComponent variableParameterComponent)
             {
                 int numberOfInputs = component.Params.Input.Count;
-                int numberOfSources = 10;
                 if (numberOfInputs < numberOfSources)
                 {
                     for (int i = numberOfInputs; i < numberOfSources; i++)
@@ -30,6 +29,7 @@ namespace OCD_Tools
                         component.Params.UnregisterInputParameter(component.Params.Input[i - 1]);
                     }
                 }
+                component.ExpireSolution(true);
             }
             else
             {

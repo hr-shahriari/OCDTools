@@ -8,7 +8,6 @@ using Grasshopper.GUI;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
-using Extensions = OCD_Tools.ExtensionMethods;
 
 
 namespace OCD_Tools
@@ -92,29 +91,6 @@ namespace OCD_Tools
             }
         }
 
-        private void UpdateNumber_Click(object sender, EventArgs e)
-        {
-            GH_Document document = Instances.ActiveCanvas.Document;
-            if (document.SelectedObjects().Count == 0)
-            {
-                int num = (int)MessageBox.Show("To use this feature, first select a component.");
-            }
-            else if (document.SelectedObjects().OfType<GH_Group>().Any())
-            {
-                int num = (int)MessageBox.Show("To use this feature, first select a component.");
-            }
-            else
-            {
-                List<GH_Component> list = ((IEnumerable)((IEnumerable<IGH_DocumentObject>)document.SelectedObjects()).Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_DocumentObject))).Cast<GH_Component>().ToList<GH_Component>();
-                foreach (var component in list)
-                {
-                    component.UpdateNumberOfInputs();
-                    component.ExpireSolution(true);
-                }
-                document.ScheduleSolution(4);
-            }
-        }
-
         internal static List<ToolStripMenuItem> MenuEntryAllowShortcut = new List<ToolStripMenuItem>();
 
         internal static void RegisterEntriesForShortcut()
@@ -187,6 +163,26 @@ namespace OCD_Tools
 
         }
 
+        private void UpdateNumber_Click(object sender, EventArgs e)
+        {
+            GH_Document document = Instances.ActiveCanvas.Document;
+            if (document.SelectedObjects().Count == 0)
+            {
+                int num = (int)MessageBox.Show("To use this feature, first select a component.");
+            }
+            else if (document.SelectedObjects().OfType<GH_Group>().Any())
+            {
+                int num = (int)MessageBox.Show("To use this feature, first select a component.");
+            }
+            else
+            {
+                List<IGH_DocumentObject> list = ((IEnumerable)((IEnumerable<IGH_DocumentObject>)document.SelectedObjects()).Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_DocumentObject))).Cast<IGH_DocumentObject>().ToList<IGH_DocumentObject>();
+                MassConnect.Connect(document, list);
+                document.ScheduleSolution(4);
+            }
+        }
+
+        
         public GH_DocumentEditor.AggregateShortcutMenuItemsEventHandler handleThis { get; set; }
     }
 }
