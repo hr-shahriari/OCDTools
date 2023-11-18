@@ -25,14 +25,11 @@ namespace OCD_Tools
                     {
                         //save the undo action for the undo stack
                         GrasshopperDocument.UndoUtil.RecordEvent(nameof(MergeInputs));
-                        //get the first source
+                        //Make the component and add the inputs with same number of source count to the component
                         GH_Merge gH_Merge = new GH_Merge();
                         gH_Merge.AutoCreateOutputs(true, param.SourceCount);
                         //add this new component to the document
                         GrasshopperDocument.AddObject(gH_Merge, false);
-                        //set the location of the new component to behind 
-                        gH_Merge.Attributes.Pivot = new System.Drawing.PointF(item.Attributes.Pivot.X - (gH_Merge.Attributes.Bounds.Width), item.Attributes.Pivot.Y + height);
-
                         //add the inputs to the new component and change the name of the input
                         for (int i = 0; i < param.SourceCount; i++)
                         {
@@ -41,6 +38,14 @@ namespace OCD_Tools
                             gH_Merge.Params.Input[i].NickName = param.Sources[i].NickName;
                             gH_Merge.Params.Input[i].Description = $"Data Stream coming from the {param.Sources[i].NickName} source";
                         }
+                        //Get the boundaries of the merge component
+                        var bounds = gH_Merge.Attributes.Bounds;
+                        //Get the location of the param
+                        var paramPivot = param.Attributes.Pivot;
+                        //set the location of the new component to behind 
+                        gH_Merge.Attributes.Pivot = new System.Drawing.PointF(paramPivot.X - (bounds.Width + 10), (item.Attributes.Pivot.Y + height)-bounds.Height);
+
+    
                         GH_WireAction ghWireAction = new GH_WireAction(param);
                         //Add the removed source action to the undo stack
                         GrasshopperDocument.UndoUtil.RecordWireEvent("Wire", param);
@@ -52,8 +57,8 @@ namespace OCD_Tools
                         //add the new component to the undo stack
                         GrasshopperDocument.UndoUtil.RecordAddObjectEvent(nameof(MergeInputs), gH_Merge);
                         //Check the height of the component and add it to the height parameter
-                        height += gH_Merge.Attributes.Bounds.Height + 5;
-
+                        height += gH_Merge.Attributes.Bounds.Height + (12 * gH_Merge.Params.Count());
+                        
                         //Expire the component
                         item.ExpireSolution(true);
                         //Save the record event
