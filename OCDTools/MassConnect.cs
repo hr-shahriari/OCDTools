@@ -42,6 +42,7 @@ namespace OCD_Tools
             {
                 lastComponent.UpdateNumberOfInputs(numberOfSources);
             }
+
             //Order the new list in y access
             var orderedList = paramList.OrderBy(x => x.Attributes.Pivot.Y).ToList();
 

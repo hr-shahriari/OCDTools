@@ -6,3 +6,6 @@ OCDTools/obj/Debug/net48/CollabTools.pdb
 OCDTools/obj/Debug/net48/OCD_Tools.csproj.FileListAbsolute.txt
 OCDTools/obj/Debug/net48/OCD_Tools.gha
 OCDTools/obj/Debug/net48/OCD_Tools.pdb
+OCDTools/bin/Debug/net48/OCD_Tools.gha
+*.pdb
+*.gha

@@ -3,14 +3,8 @@ using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Grasshopper.Kernel.Undo;
 using System.Drawing;
-using Grasshopper.Kernel.Undo.Actions;
-using Grasshopper.Kernel.Parameters;
-using Rhino.UI;
-using System.Runtime.Remoting.Messaging;
 using System.Collections;
 
 namespace OCD_Tools

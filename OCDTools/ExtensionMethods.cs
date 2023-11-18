@@ -5,6 +5,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Parameters;
+using Grasshopper.Kernel.Types;
 
 namespace OCD_Tools
 {
@@ -12,8 +15,10 @@ namespace OCD_Tools
     {
         public static void UpdateNumberOfInputs(this GH_Component component, int numberOfSources)
         {
+
             if (component is IGH_VariableParameterComponent variableParameterComponent)
             {
+                
                 int numberOfInputs = component.Params.Input.Count;
                 if (numberOfInputs < numberOfSources)
                 {
@@ -21,6 +26,9 @@ namespace OCD_Tools
                     {
                         component.Params.RegisterInputParam(new Grasshopper.Kernel.Parameters.Param_GenericObject());
                     }
+                    component.Params.OnParametersChanged();
+                    variableParameterComponent.VariableParameterMaintenance();
+
                 }
                 else if (numberOfInputs > numberOfSources)
                 {

@@ -99,19 +99,6 @@ namespace OCD_Tools
 
         public void VariableParameterMaintenance()
         {
-            //int num = checked(this.Params.Input.Count - 1);
-            //int index = 0;
-            //while (index <= num)
-            //{
-
-            //    this.Params.Input[index].Name = string.Format("Data {0}", (object)checked(index + 1));
-            //    this.Params.Input[index].NickName = string.Format("D{0}", (object)checked(index + 1));
-            //    this.Params.Input[index].Description = string.Format("Data stream {0}", (object)checked(index + 1));
-            //    this.Params.Input[index].Optional = true;
-            //    this.Params.Input[index].MutableNickName = false;
-            //    this.Params.Input[index].Access = GH_ParamAccess.tree;
-            //    checked { ++index; }
-            //}
             int num = this.Params.Input.Count;
             for (int index = 0; index < num; index++)
             {
