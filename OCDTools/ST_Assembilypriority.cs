@@ -67,6 +67,7 @@ namespace OCD_Tools
         ToolStripMenuItem duplicateComponent;
         ToolStripMenuItem mergedInputs;
         ToolStripMenuItem autoConnect;
+        ToolStripMenuItem appendTOEnd;
 
         private List<ToolStripMenuItem> OCDMenuItems
         {
@@ -78,15 +79,18 @@ namespace OCD_Tools
                 duplicateComponent = new ToolStripMenuItem("Duplicate Component");
                 mergedInputs = new ToolStripMenuItem("Get Merged Inputs");
                 autoConnect = new ToolStripMenuItem("Auto Connect");
+                appendTOEnd = new ToolStripMenuItem("Auto Append");
                 // Assign event handlers for the menu items (assuming you have methods to handle these)
                 duplicateGroup.Click += new EventHandler(this.DuplicateGroup_Click);
                 duplicateComponent.Click += new EventHandler(this.DuplicateComponent_Click);
                 mergedInputs.Click += new EventHandler(this.GetMergedInputs_Click);
                 autoConnect.Click += new EventHandler(this.AutoConnect_Click);
+                appendTOEnd.Click += new EventHandler(this.AppendToEnd_Click);
                 list.Add(duplicateGroup);
                 list.Add(duplicateComponent);
                 list.Add(mergedInputs);
                 list.Add(autoConnect);
+                list.Add(appendTOEnd);
                 return list;
             }
         }
@@ -108,6 +112,7 @@ namespace OCD_Tools
             e.AppendItem(this.duplicateComponent);
             e.AppendItem(this.mergedInputs);
             e.AppendItem(this.autoConnect);
+            e.AppendItem(this.appendTOEnd);
         }
         private void DuplicateGroup_Click(object sender, EventArgs e)
         {
@@ -181,8 +186,27 @@ namespace OCD_Tools
                 document.ScheduleSolution(4);
             }
         }
+        private void AppendToEnd_Click(object sender, EventArgs e)
+        {
+            GH_Document document = Instances.ActiveCanvas.Document;
+            if (document.SelectedObjects().Count == 0)
+            {
+                int num = (int)MessageBox.Show("To use this feature, first select a component.");
+            }
+            else if (document.SelectedObjects().OfType<GH_Group>().Any())
+            {
+                int num = (int)MessageBox.Show("To use this feature, first select a component.");
+            }
+            else
+            {
+                List<IGH_DocumentObject> list = ((IEnumerable)((IEnumerable<IGH_DocumentObject>)document.SelectedObjects()).Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_DocumentObject))).Cast<IGH_DocumentObject>().ToList<IGH_DocumentObject>();
+                MassConnect.Append(document, list);
+                document.ScheduleSolution(4);
+            }
+        }
 
-        
+
+
         public GH_DocumentEditor.AggregateShortcutMenuItemsEventHandler handleThis { get; set; }
     }
 }

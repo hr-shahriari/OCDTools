@@ -21,8 +21,8 @@ namespace OCD_Tools
         /// Initializes a new instance of the Merge class.
         /// </summary>
         public GH_Merge()
-          : base("Advance Merge", "AdvanceMerge",
-              "Description",
+          : base("Easy Merge", "E_Merge",
+              "Merge a bunch of data streams similar to Merge component with some additional properties",
               "Sets", "Tree")
         {
             SimplifyAll = false;
@@ -165,39 +165,8 @@ namespace OCD_Tools
 
         protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
         {
-            Menu_AppendItem(menu, "Simplify All", Simplify_All_Clicked,true, SimplifyAll);
             Menu_AppendItem(menu, "Flatten All", Flatten_All_Clicked, true, FlattenAll);
             base.AppendAdditionalComponentMenuItems(menu);
-        }
-
-        private void Simplify_All_Clicked(object sender, EventArgs e)
-        {
-            SimplifyAll = !SimplifyAll;
-            foreach (var param in this.Params.Input)
-            {
-                param.Simplify = SimplifyAll;
-                
-                OnObjectChanged(GH_ObjectEventType.DataMapping);
-            }
-            if (FlattenAll && SimplifyAll)
-            {
-                this.Message = "Flattend/Simplified";
-            }
-            else if (SimplifyAll)
-            {
-                this.Message = "Simplifed";
-            }
-            else
-            {
-                this.Message = "";
-            }
-            this.Params.OnParametersChanged();
-            VariableParameterMaintenance();
-            this.ExpireSolution(true);
-            this.OnSolutionExpired(true);
-            this.Locked = true;
-            this.Locked = false;
-            this.ExpireSolution(true);
         }
 
         private void Flatten_All_Clicked(object sender, EventArgs e)
@@ -217,12 +186,7 @@ namespace OCD_Tools
                 }
             }
             
-            if (FlattenAll && SimplifyAll)
-                {
-                    this.Message = "Flattend/Simplified";
-                }
-
-                else if (FlattenAll)
+                if (FlattenAll)
                 {
                     this.Message = "Flattend";
                 }
