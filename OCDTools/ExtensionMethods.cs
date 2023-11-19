@@ -22,6 +22,7 @@ namespace OCD_Tools
                 int numberOfInputs = component.Params.Input.Count;
                 if (numberOfInputs < numberOfSources)
                 {
+                    component.RecordUndoEvent("Add input");
                     for (int i = numberOfInputs; i < numberOfSources; i++)
                     {
                         component.Params.RegisterInputParam(new Grasshopper.Kernel.Parameters.Param_GenericObject());
@@ -32,6 +33,7 @@ namespace OCD_Tools
                 }
                 else if (numberOfInputs > numberOfSources)
                 {
+                    component.RecordUndoEvent("Remove Inputs");
                     for (int i = numberOfInputs; i > numberOfSources; i--)
                     {
                         component.Params.UnregisterInputParameter(component.Params.Input[i - 1]);

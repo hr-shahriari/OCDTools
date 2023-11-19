@@ -13,9 +13,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Reference Include="ScriptComponents">
-      <HintPath>..\..\..\Program Files\Rhino 7\Plug-ins\Grasshopper\Components\ScriptComponents.dll</HintPath>
-    </Reference>
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   

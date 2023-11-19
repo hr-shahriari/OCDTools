@@ -8,6 +8,7 @@ using Grasshopper.Kernel.Types;
 using System.Windows.Forms;
 using Rhino.Geometry;
 using System.Runtime.CompilerServices;
+using GH_IO.Serialization;
 
 namespace OCD_Tools
 {
@@ -23,7 +24,34 @@ namespace OCD_Tools
               "Description",
               "Sets", "Tree")
         {
+            SimplifyAll = false;
+            FlattenAll = false;
         }
+
+        public override bool Read(GH_IReader reader)
+        {
+            var simplify = false;
+            var flatten = false;
+
+            if(reader.TryGetBoolean("SimplifyAll", ref simplify))
+            {
+                SimplifyAll = simplify;
+            }
+            if (reader.TryGetBoolean("FlattenAll", ref flatten))
+            {
+                FlattenAll = flatten;
+            }
+            
+            return base.Read(reader);
+        }
+
+        public override bool Write(GH_IWriter writer)
+        {
+            writer.SetBoolean("SimplifyAll", SimplifyAll);
+            writer.SetBoolean("FlattenAll", FlattenAll);
+            return base.Write(writer);
+        }
+
 
         /// <summary>
         /// Registers all the input parameters for this component.
@@ -49,17 +77,23 @@ namespace OCD_Tools
         {
             if (DA.Iteration > 0)
                 return;
-            GH_Structure<IGH_Goo> tree1 = new GH_Structure<IGH_Goo>();
-            int num = checked(this.Params.Input.Count - 1);
-            int index = 0;
-            while (index <= num)
+
+            var mergedTree = new GH_Structure<IGH_Goo>();
+            int inputCount = this.Params.Input.Count;
+
+            for (int i = 0; i < inputCount; i++)
             {
-                GH_Structure<IGH_Goo> tree2 = (GH_Structure<IGH_Goo>)null;
-                if (DA.GetDataTree<IGH_Goo>(index, out tree2) && tree2 != null)
-                    tree1.MergeStructure(tree2);
-                checked { ++index; }
+                if (DA.GetDataTree(i, out GH_Structure<IGH_Goo> currentTree) && currentTree != null)
+                {
+                    if (FlattenAll)
+                    {
+                        currentTree.Flatten();
+                    }
+                    mergedTree.MergeStructure(currentTree);
+                }
             }
-            DA.SetDataTree(0, (IGH_Structure)tree1);
+
+            DA.SetDataTree(0, mergedTree);
         }
 
         /// <summary>
@@ -132,6 +166,7 @@ namespace OCD_Tools
             foreach (var param in this.Params.Input)
             {
                 param.Simplify = SimplifyAll;
+                this.Params.OnParametersChanged();
             }
             if (FlattenAll && SimplifyAll)
             {
@@ -145,7 +180,10 @@ namespace OCD_Tools
             {
                 this.Message = "";
             }
+            
+            VariableParameterMaintenance();
             this.ExpireSolution(true);
+            this.OnSolutionExpired(true);
         }
 
         private void Flatten_All_Clicked(object sender, EventArgs e)
@@ -160,8 +198,12 @@ namespace OCD_Tools
                 else
                 {
                     param.DataMapping = GH_DataMapping.None;
+                    
+                   
                 }
-                if (FlattenAll && SimplifyAll)
+            }
+            
+            if (FlattenAll && SimplifyAll)
                 {
                     this.Message = "Flattend/Simplified";
                 }
@@ -174,8 +216,10 @@ namespace OCD_Tools
                 {
                     this.Message = "";
                 }
-                this.ExpireSolution(true);
-            }
+            this.ClearData();
+            this.Params.OnParametersChanged();
+            VariableParameterMaintenance();
+            this.ExpireSolution(true);
         }
 
         internal void AutoCreateOutputs(bool recompute, int number)
