@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Rhino.Geometry;
 using System.Runtime.CompilerServices;
 using GH_IO.Serialization;
+using OCD_Tools.Properties;
 
 namespace OCD_Tools
 {
@@ -28,6 +29,13 @@ namespace OCD_Tools
             FlattenAll = false;
         }
 
+        /// <summary>
+        ///  This method is used to deserialize or read the state of a component from a data source (like a file or a memory stream). 
+        ///  It's typically called when Grasshopper loads a component, including when a Grasshopper file (.gh or .ghx) is opened.
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
+
         public override bool Read(GH_IReader reader)
         {
             var simplify = false;
@@ -44,6 +52,12 @@ namespace OCD_Tools
             
             return base.Read(reader);
         }
+        /// <summary>
+        /// This method serializes or writes the state of a component to a data source. It is used when saving a Grasshopper file, 
+        /// ensuring that the specific state of the component (like user settings or internal data) is preserved.
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <returns></returns>
 
         public override bool Write(GH_IWriter writer)
         {
@@ -85,10 +99,6 @@ namespace OCD_Tools
             {
                 if (DA.GetDataTree(i, out GH_Structure<IGH_Goo> currentTree) && currentTree != null)
                 {
-                    if (FlattenAll)
-                    {
-                        currentTree.Flatten();
-                    }
                     mergedTree.MergeStructure(currentTree);
                 }
             }
@@ -110,7 +120,8 @@ namespace OCD_Tools
         /// <summary>
         ///  Checks if a parameter can be removed from a component at a given index on a specified side.
         ///  It returns true if the side is not GH_ParameterSide.Output and the number of input parameters is greater than 1. 
-        ///  This implies that parameters can be removed from the input side as long as there is more than one input parameter, but they cannot be removed from the output side.
+        ///  This implies that parameters can be removed from the input side as long as there is more than one input parameter, 
+        ///  but they cannot be removed from the output side.
         /// </summary>
         /// <param name="side"></param>
         /// <param name="index"></param>
@@ -156,7 +167,6 @@ namespace OCD_Tools
         {
             Menu_AppendItem(menu, "Simplify All", Simplify_All_Clicked,true, SimplifyAll);
             Menu_AppendItem(menu, "Flatten All", Flatten_All_Clicked, true, FlattenAll);
-
             base.AppendAdditionalComponentMenuItems(menu);
         }
 
@@ -166,7 +176,8 @@ namespace OCD_Tools
             foreach (var param in this.Params.Input)
             {
                 param.Simplify = SimplifyAll;
-                this.Params.OnParametersChanged();
+                
+                OnObjectChanged(GH_ObjectEventType.DataMapping);
             }
             if (FlattenAll && SimplifyAll)
             {
@@ -180,10 +191,13 @@ namespace OCD_Tools
             {
                 this.Message = "";
             }
-            
+            this.Params.OnParametersChanged();
             VariableParameterMaintenance();
             this.ExpireSolution(true);
             this.OnSolutionExpired(true);
+            this.Locked = true;
+            this.Locked = false;
+            this.ExpireSolution(true);
         }
 
         private void Flatten_All_Clicked(object sender, EventArgs e)
@@ -194,12 +208,12 @@ namespace OCD_Tools
                 if (FlattenAll)
                 {
                     param.DataMapping = GH_DataMapping.Flatten;
+                    OnObjectChanged(GH_ObjectEventType.DataMapping);
                 }
                 else
                 {
                     param.DataMapping = GH_DataMapping.None;
-                    
-                   
+                    OnObjectChanged(GH_ObjectEventType.DataMapping);
                 }
             }
             
@@ -219,6 +233,8 @@ namespace OCD_Tools
             this.ClearData();
             this.Params.OnParametersChanged();
             VariableParameterMaintenance();
+            this.Locked = true;
+            this.Locked = false;
             this.ExpireSolution(true);
         }
 
@@ -243,6 +259,7 @@ namespace OCD_Tools
                 }
             }
             Params.OnParametersChanged();
+            
             VariableParameterMaintenance();
             ExpireSolution(recompute);
             
@@ -257,7 +274,7 @@ namespace OCD_Tools
             {
                 //You can add image files to your project resources and access them like this:
                 // return Resources.IconForThisComponent;
-                return null;
+                return Resources.Merge;
             }
         }
 

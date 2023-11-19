@@ -66,7 +66,7 @@ namespace OCD_Tools
         ToolStripMenuItem duplicateGroup;
         ToolStripMenuItem duplicateComponent;
         ToolStripMenuItem mergedInputs;
-        ToolStripMenuItem updateNumber;
+        ToolStripMenuItem autoConnect;
 
         private List<ToolStripMenuItem> OCDMenuItems
         {
@@ -77,16 +77,16 @@ namespace OCD_Tools
                 duplicateGroup = new ToolStripMenuItem("Duplicate Groups");
                 duplicateComponent = new ToolStripMenuItem("Duplicate Component");
                 mergedInputs = new ToolStripMenuItem("Get Merged Inputs");
-                updateNumber = new ToolStripMenuItem("Update Number");
+                autoConnect = new ToolStripMenuItem("Auto Connect");
                 // Assign event handlers for the menu items (assuming you have methods to handle these)
                 duplicateGroup.Click += new EventHandler(this.DuplicateGroup_Click);
                 duplicateComponent.Click += new EventHandler(this.DuplicateComponent_Click);
                 mergedInputs.Click += new EventHandler(this.GetMergedInputs_Click);
-                updateNumber.Click += new EventHandler(this.UpdateNumber_Click);
+                autoConnect.Click += new EventHandler(this.AutoConnect_Click);
                 list.Add(duplicateGroup);
                 list.Add(duplicateComponent);
                 list.Add(mergedInputs);
-                list.Add(updateNumber);
+                list.Add(autoConnect);
                 return list;
             }
         }
@@ -107,7 +107,7 @@ namespace OCD_Tools
             e.AppendItem(this.duplicateGroup);
             e.AppendItem(this.duplicateComponent);
             e.AppendItem(this.mergedInputs);
-            e.AppendItem(this.updateNumber);
+            e.AppendItem(this.autoConnect);
         }
         private void DuplicateGroup_Click(object sender, EventArgs e)
         {
@@ -163,7 +163,7 @@ namespace OCD_Tools
 
         }
 
-        private void UpdateNumber_Click(object sender, EventArgs e)
+        private void AutoConnect_Click(object sender, EventArgs e)
         {
             GH_Document document = Instances.ActiveCanvas.Document;
             if (document.SelectedObjects().Count == 0)
