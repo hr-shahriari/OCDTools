@@ -175,10 +175,6 @@ namespace OCD_Tools
             {
                 int num = (int)MessageBox.Show("To use this feature, first select a component.");
             }
-            else if (document.SelectedObjects().OfType<GH_Group>().Any())
-            {
-                int num = (int)MessageBox.Show("To use this feature, first select a component.");
-            }
             else
             {
                 List<IGH_DocumentObject> list = ((IEnumerable)((IEnumerable<IGH_DocumentObject>)document.SelectedObjects()).Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_DocumentObject))).Cast<IGH_DocumentObject>().ToList<IGH_DocumentObject>();
@@ -190,10 +186,6 @@ namespace OCD_Tools
         {
             GH_Document document = Instances.ActiveCanvas.Document;
             if (document.SelectedObjects().Count == 0)
-            {
-                int num = (int)MessageBox.Show("To use this feature, first select a component.");
-            }
-            else if (document.SelectedObjects().OfType<GH_Group>().Any())
             {
                 int num = (int)MessageBox.Show("To use this feature, first select a component.");
             }

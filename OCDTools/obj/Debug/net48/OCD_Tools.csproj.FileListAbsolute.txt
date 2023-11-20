@@ -45,3 +45,5 @@ C:\dev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.gha
 C:\dev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.pdb
 C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.Properties.Resources.resources
 C:\grasshopperDev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.csproj.GenerateResource.cache
+C:\dev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.Properties.Resources.resources
+C:\dev\OCDTools\OCDTools\obj\Debug\net48\OCD_Tools.csproj.GenerateResource.cache

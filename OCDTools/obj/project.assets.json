@@ -88,19 +88,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Hamidreza\\.nuget\\packages\\": {}
+    "C:\\Users\\Shahriari\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\grasshopperDev\\OCDTools\\OCDTools\\OCD_Tools.csproj",
+      "projectUniqueName": "C:\\dev\\OCDTools\\OCDTools\\OCD_Tools.csproj",
       "projectName": "OCD_Tools",
-      "projectPath": "C:\\grasshopperDev\\OCDTools\\OCDTools\\OCD_Tools.csproj",
-      "packagesPath": "C:\\Users\\Hamidreza\\.nuget\\packages\\",
-      "outputPath": "C:\\grasshopperDev\\OCDTools\\OCDTools\\obj\\",
+      "projectPath": "C:\\dev\\OCDTools\\OCDTools\\OCD_Tools.csproj",
+      "packagesPath": "C:\\Users\\Shahriari\\.nuget\\packages\\",
+      "outputPath": "C:\\dev\\OCDTools\\OCDTools\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Hamidreza\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Shahriari\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -132,7 +132,7 @@
             "version": "[6.12.19029.6381, )"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.101\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.402\\RuntimeIdentifierGraph.json"
       }
     }
   }
