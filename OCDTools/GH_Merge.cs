@@ -10,6 +10,7 @@ using Rhino.Geometry;
 using System.Runtime.CompilerServices;
 using GH_IO.Serialization;
 using OCD_Tools.Properties;
+using System.Linq;
 
 namespace OCD_Tools
 {
@@ -166,6 +167,7 @@ namespace OCD_Tools
         protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
         {
             Menu_AppendItem(menu, "Flatten All", Flatten_All_Clicked, true, FlattenAll);
+            Menu_AppendItem(menu, "Rewire by location", Rewire_based_on_location_clicked);
             base.AppendAdditionalComponentMenuItems(menu);
         }
 
@@ -228,6 +230,26 @@ namespace OCD_Tools
             ExpireSolution(recompute);
             
         }
+
+        /// <summary>
+        /// Function to rewire the component based on the order in y direction
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Rewire_based_on_location_clicked(object sender, EventArgs e)
+        {
+            var inputSources = this.Params.Input.SelectMany(x => x.Sources).OrderBy(x=> x.Attributes.Pivot.Y).ToList();
+            for (int i =0; i < inputSources.Count; i++)
+            {
+                var input = this.Params.Input[i];
+                this.OnPingDocument().UndoUtil.RecordWireEvent("Wire", input);
+                input.RemoveAllSources();
+                input.AddSource(inputSources[i]);
+            }
+            this.ExpireSolution(true);
+        }
+
+
 
         /// <summary>
         /// Provides an Icon for the component.
