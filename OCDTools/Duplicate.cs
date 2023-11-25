@@ -6,6 +6,7 @@ using System.Linq;
 using Grasshopper.Kernel.Undo;
 using System.Drawing;
 using System.Collections;
+using System.ComponentModel;
 
 namespace OCD_Tools
 {
@@ -18,12 +19,8 @@ namespace OCD_Tools
             var newDocumentIO = new GH_DocumentIO();
 
             GrasshopperDocument.UndoUtil.RecordEvent(nameof(DuplicateGroup));
-            //GH_UndoRecord ghUndoRecord = new GH_UndoRecord(nameof(DuplicateGroup));
             foreach (GH_Group group in groups)
             {
-                //GH_GenericObjectAction genericObjectAction = new GH_GenericObjectAction((IGH_DocumentObject)group);
-                //ghUndoRecord.AddAction((IGH_UndoAction)genericObjectAction);
-                //group.ExpireCaches();
                 List<Guid> groupGuids = new List<Guid>();
                 groupGuids.Add(group.InstanceGuid);
                 foreach (Guid id in group.ObjectIDs)
@@ -39,7 +36,7 @@ namespace OCD_Tools
                 int sHeight = (int)Math.Round(bounds.Height);
                 int sWidth = 10;
 
-                
+
 
                 // For-loop used to duplicate component and to assign properties to it (size, datalist...) 
 
@@ -59,7 +56,7 @@ namespace OCD_Tools
                 newDocumentIO = documentIO;
                 GrasshopperDocument.DeselectAll();
                 GrasshopperDocument.MergeDocument(documentIO.Document);
-                
+
 
             }
 
@@ -84,44 +81,112 @@ namespace OCD_Tools
         internal static void DuplicateComponent(GH_Document GrasshopperDocument, List<IGH_DocumentObject> ighDocumentObjects)
         {
             List<Guid> newObjectIDs = new List<Guid>();
-            var newDocumentIO = new GH_DocumentIO();
-            foreach (var ighDocumentObject in ighDocumentObjects)
+            //Make a list without GH_Group objects form the ighDocumentObjects
+            List<IGH_DocumentObject> newDocObjects = new List<IGH_DocumentObject>();
+            foreach (IGH_DocumentObject docObject in ighDocumentObjects)
             {
-                var guid = new List<Guid>();
-                guid.Add(ighDocumentObject.InstanceGuid);
-
-                IGH_Attributes att = ighDocumentObject.Attributes;
-                RectangleF bounds = att.Bounds;
-                int sHeight = (int)Math.Round(bounds.Height);
-                int sWidth = 4;
-                GH_DocumentIO documentIO = new GH_DocumentIO(GrasshopperDocument);
-                documentIO.Copy(GH_ClipboardType.System, guid);
-                documentIO.Paste(GH_ClipboardType.System);
-
-                documentIO.Document.TranslateObjects(new Size(0, sWidth + sHeight), false);
-                documentIO.Document.SelectAll();
-                documentIO.Document.MutateAllIds();
-                var objects =  documentIO.Document.Objects;
-                foreach (var _object in objects)
+                if (!(docObject is GH_Group))
                 {
-                    newObjectIDs.Add(_object.InstanceGuid);
+                    newDocObjects.Add(docObject);
                 }
-                List<IGH_Param> paramsList = new List<IGH_Param>();
-                foreach (IGH_Component ighComponent in ((IEnumerable)objects.Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_Component))).Cast<IGH_Component>().ToList<IGH_Component>())
-                {
-                    paramsList.AddRange((IEnumerable<IGH_Param>)ighComponent.Params.Input);
-                    foreach (var input in ighComponent.Params.Input)
-                    {
-                        input.RemoveAllSources();
-                       
-                    }
-
-                }
-                newDocumentIO = documentIO;
-                GrasshopperDocument.DeselectAll();
-                GrasshopperDocument.MergeDocument(documentIO.Document);
             }
+            newDocObjects = newDocObjects.OrderBy(x => x.Attributes.Bounds.Height).ToList();
+            //Make a list of guid of the newDocObjects
+            List<Guid> newDocObjectsGuids = newDocObjects.Select(x => x.InstanceGuid).ToList();
+            //Get the height of the bounding rectangle of the newDocObjects
+            var bounds = newDocObjects.Select(x => x.Attributes.Bounds.Height).ToList();
+
+            var newDocumentIO = new GH_DocumentIO();
+
+            int sHeight = (int)Math.Round(bounds.Sum());
+            int sWidth = 4;
+            //Make a new GH_Document IO and copy_paste and translate the selected objects
+            GH_DocumentIO documentIO = new GH_DocumentIO(GrasshopperDocument);
+            documentIO.Copy(GH_ClipboardType.System, newDocObjectsGuids);
+            documentIO.Paste(GH_ClipboardType.System);
+            documentIO.Document.TranslateObjects(new Size(0, sWidth + sHeight), false);
+            documentIO.Document.SelectAll();
+            documentIO.Document.MutateAllIds();
+
+            //Store the objects Guids 
+            var objects = documentIO.Document.Objects;
+            foreach (var _object in objects)
+            {
+                newObjectIDs.Add(_object.InstanceGuid);
+            }
+            List<IGH_Param> paramsList = new List<IGH_Param>();
+
+            //Check if the input sources are not within the selection, remove them from the selected components
+            foreach (IGH_Component ighComponent in (objects.OfType<IGH_Component>().ToList<IGH_Component>()))
+            {
+                paramsList.AddRange((IEnumerable<IGH_Param>)ighComponent.Params.Input);
+                foreach (var input in ighComponent.Params.Input)
+                {
+                    List<IGH_Param> sourceList = new List<IGH_Param>();
+                    if (input.SourceCount > 0)
+                    {
+                        foreach (var source in input.Sources)
+                        {
+                            if (!newObjectIDs.Contains(source.InstanceGuid))
+                            {
+                                sourceList.Add(source);
+                            }
+                        }
+                        foreach (var source in sourceList)
+                        {
+                            input.RemoveSource(source);
+                        }
+                    }
+                }
+
+            }
+            newDocumentIO = documentIO;
+            GrasshopperDocument.DeselectAll();
+            GrasshopperDocument.MergeDocument(documentIO.Document);
+
             RecordUndoAction(GrasshopperDocument, newObjectIDs, newDocumentIO);
         }
+
+        //internal static void DuplicateComponent(GH_Document GrasshopperDocument, List<IGH_DocumentObject> ighDocumentObjects)
+        //{
+        //    List<Guid> newObjectIDs = new List<Guid>();
+        //    var newDocumentIO = new GH_DocumentIO();
+        //    foreach (var ighDocumentObject in ighDocumentObjects)
+        //    {
+        //        var guid = new List<Guid>();
+        //        guid.Add(ighDocumentObject.InstanceGuid);
+
+        //        IGH_Attributes att = ighDocumentObject.Attributes;
+        //        RectangleF bounds = att.Bounds;
+        //        int sHeight = (int)Math.Round(bounds.Height);
+        //        int sWidth = 4;
+        //        GH_DocumentIO documentIO = new GH_DocumentIO(GrasshopperDocument);
+        //        documentIO.Copy(GH_ClipboardType.System, guid);
+        //        documentIO.Paste(GH_ClipboardType.System);
+
+        //        documentIO.Document.TranslateObjects(new Size(0, sWidth + sHeight), false);
+        //        documentIO.Document.SelectAll();
+        //        documentIO.Document.MutateAllIds();
+        //        var objects = documentIO.Document.Objects;
+        //        foreach (var _object in objects)
+        //        {
+        //            newObjectIDs.Add(_object.InstanceGuid);
+        //        }
+        //        List<IGH_Param> paramsList = new List<IGH_Param>();
+        //        foreach (IGH_Component ighComponent in (objects.OfType<IGH_Component>().ToList<IGH_Component>()))
+        //        {
+        //            paramsList.AddRange((IEnumerable<IGH_Param>)ighComponent.Params.Input);
+        //            foreach (var input in ighComponent.Params.Input)
+        //            {
+        //                input.RemoveAllSources();
+        //            }
+
+        //        }
+        //        newDocumentIO = documentIO;
+        //        GrasshopperDocument.DeselectAll();
+        //        GrasshopperDocument.MergeDocument(documentIO.Document);
+        //    }
+        //    RecordUndoAction(GrasshopperDocument, newObjectIDs, newDocumentIO);
+        //}
     }
 }

@@ -123,7 +123,9 @@ namespace OCD_Tools
             }
             else
             {
-                List<GH_Group> list = ((IEnumerable)((IEnumerable<IGH_DocumentObject>)document.SelectedObjects()).Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is GH_Group))).Cast<GH_Group>().ToList<GH_Group>();
+                List<GH_Group> list = document.SelectedObjects()
+                    .OfType<GH_Group>()
+                    .ToList();
                 Duplicate.DuplicateGroup(document, list);
                 document.ScheduleSolution(4);
             }
@@ -177,7 +179,7 @@ namespace OCD_Tools
             }
             else
             {
-                List<IGH_DocumentObject> list = ((IEnumerable)((IEnumerable<IGH_DocumentObject>)document.SelectedObjects()).Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_DocumentObject))).Cast<IGH_DocumentObject>().ToList<IGH_DocumentObject>();
+                List<IGH_DocumentObject> list = document.SelectedObjects().Cast<IGH_DocumentObject>().ToList();
                 MassConnect.Connect(document, list);
                 document.ScheduleSolution(4);
             }
@@ -191,7 +193,7 @@ namespace OCD_Tools
             }
             else
             {
-                List<IGH_DocumentObject> list = ((IEnumerable)((IEnumerable<IGH_DocumentObject>)document.SelectedObjects()).Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_DocumentObject))).Cast<IGH_DocumentObject>().ToList<IGH_DocumentObject>();
+                List<IGH_DocumentObject> list = document.SelectedObjects().Cast<IGH_DocumentObject>().ToList();
                 MassConnect.Append(document, list);
                 document.ScheduleSolution(4);
             }
