@@ -7,7 +7,7 @@ namespace OCD_Tools
 {
     public class OCDToolsAssemblyInfo : GH_AssemblyInfo
     {
-        public override string Name => "CollabTools";
+        public override string Name => "OCD Tools";
 
         //Return a 24x24 pixel bitmap to represent this GHA library.
         public override Bitmap Icon => null;
@@ -18,9 +18,9 @@ namespace OCD_Tools
         public override Guid Id => new Guid("122ff9aa-1819-4d0d-8e8d-8ab721f4d588");
 
         //Return a string identifying you or your company.
-        public override string AuthorName => "";
+        public override string AuthorName => "Hamidreza Shahriari";
 
         //Return a string representing your preferred contact details.
-        public override string AuthorContact => "";
+        public override string AuthorContact => "Food4Rhino";
     }
 }
