@@ -23,13 +23,13 @@ namespace OCD_Tools
             //Take the last component on the right handside and do the UpdateNumberOfInputs method based on the number of outputs from the left handside components
             var lastComponent = (GH_Component) sortedList.Last();
             var newList = sortedList.Take(sortedList.Count - 1).ToList();
-            IEnumerable<IGH_DocumentObject> iNewSortedList = ((IEnumerable<IGH_DocumentObject>)newList.Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_ActiveObject)));
+            IEnumerable<IGH_DocumentObject> iNewSortedList = newList.OfType<IGH_ActiveObject>();
             //take the sum of the number of the outputs from the newlist
 
-            List<IGH_Param> paramList = ((IEnumerable)iNewSortedList.Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_Param))).Cast<IGH_Param>().ToList<IGH_Param>();
+            List<IGH_Param> paramList = iNewSortedList.OfType<IGH_Param>().ToList();
             //Make a list from paramList from IGH_params that are output
-
-            foreach (IGH_Component ighComponent in ((IEnumerable)newList.Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_Component))).Cast<IGH_Component>().ToList<IGH_Component>())
+            
+            foreach (IGH_Component ighComponent in (newList.OfType<IGH_Component>().ToList()))
             {
                 paramList.AddRange((IEnumerable<IGH_Param>)ighComponent.Params.Output);
             }
@@ -72,13 +72,13 @@ namespace OCD_Tools
             //Take the last component on the right handside and do the UpdateNumberOfInputs method based on the number of outputs from the left handside components
             var lastComponent = (GH_Component)sortedList.Last();
             var newList = sortedList.Take(sortedList.Count - 1).ToList();
-            IEnumerable<IGH_DocumentObject> iNewSortedList = ((IEnumerable<IGH_DocumentObject>)newList.Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_ActiveObject)));
+            IEnumerable<IGH_DocumentObject> iNewSortedList = newList.OfType<IGH_ActiveObject>();
             //take the sum of the number of the outputs from the newlist
 
-            List<IGH_Param> paramList = ((IEnumerable)iNewSortedList.Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_Param))).Cast<IGH_Param>().ToList<IGH_Param>();
+            List<IGH_Param> paramList = iNewSortedList.OfType<IGH_Param>().ToList();
             //Make a list from paramList from IGH_params that are output
 
-            foreach (IGH_Component ighComponent in ((IEnumerable)newList.Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_Component))).Cast<IGH_Component>().ToList<IGH_Component>())
+            foreach (IGH_Component ighComponent in (newList.OfType<IGH_Component>().ToList()))
             {
                 paramList.AddRange((IEnumerable<IGH_Param>)ighComponent.Params.Output);
             }

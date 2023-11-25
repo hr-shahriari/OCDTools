@@ -137,13 +137,10 @@ namespace OCD_Tools
             {
                 int num = (int)MessageBox.Show("To use this feature, first select a component.");
             }
-            else if (document.SelectedObjects().OfType<GH_Group>().Any())
-            {
-                int num = (int)MessageBox.Show("To use this feature, first select a component.");
-            }
             else
             {
-                List<IGH_DocumentObject> list = ((IEnumerable)((IEnumerable<IGH_DocumentObject>)document.SelectedObjects()).Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_DocumentObject))).Cast<IGH_DocumentObject>().ToList<IGH_DocumentObject>();
+                
+                List<IGH_DocumentObject> list = document.SelectedObjects().OfType<IGH_DocumentObject>().ToList();
                 Duplicate.DuplicateComponent(document, list);
                 document.ScheduleSolution(4);
             }
@@ -163,7 +160,8 @@ namespace OCD_Tools
             }
             else
             {
-                List<IGH_Component> list = ((IEnumerable)((IEnumerable<IGH_DocumentObject>)document.SelectedObjects()).Where<IGH_DocumentObject>((Func<IGH_DocumentObject, bool>)(o => o is IGH_DocumentObject))).Cast<IGH_Component>().ToList<IGH_Component>();
+                
+                List<IGH_Component> list = document.SelectedObjects().OfType<IGH_Component>().ToList();
                 MergeInputs.Merge(document, list);
                 document.ScheduleSolution(4);
             }
