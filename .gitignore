@@ -1,12 +1,6 @@
-
-OCDTools/obj/Debug/net48/CollabTools.gha
-OCDTools/obj/Debug/net48/CollabTools.pdb
 .vs/OCDTools/DesignTimeBuild/.dtbcache.v2
 .vs/OCDTools/v17/.suo
 OCDTools/obj/Debug/net48/OCD_Tools.csproj.FileListAbsolute.txt
-OCDTools/obj/Debug/net48/OCD_Tools.gha
-OCDTools/obj/Debug/net48/OCD_Tools.pdb
-OCDTools/bin/Debug/net48/OCD_Tools.gha
 *.pdb
 *.gha
 *.cache
