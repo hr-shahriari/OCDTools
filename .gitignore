@@ -1,6 +1,6 @@
-.vs/OCDTools/DesignTimeBuild/.dtbcache.v2
-.vs/OCDTools/v17/.suo
-OCDTools/obj/Debug/net48/OCD_Tools.csproj.FileListAbsolute.txt
+.vs/
+OCDTools/obj/
+OCDTools/bin/
 *.pdb
 *.gha
 *.cache
