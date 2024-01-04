@@ -27,7 +27,7 @@ namespace OCD_Tools
                         GrasshopperDocument.UndoUtil.RecordEvent(nameof(MergeInputs));
                         //Make the component and add the inputs with same number of source count to the component
                         GH_Merge gH_Merge = new GH_Merge();
-                        gH_Merge.AutoCreateOutputs(true, param.SourceCount);
+                        gH_Merge.AutoCreateInputs(true, param.SourceCount);
                         //add this new component to the document
                         GrasshopperDocument.AddObject(gH_Merge, false);
                         //add the inputs to the new component and change the name of the input

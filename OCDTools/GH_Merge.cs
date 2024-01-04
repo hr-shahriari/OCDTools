@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using GH_IO.Serialization;
 using OCD_Tools.Properties;
 using System.Linq;
+using Grasshopper.Kernel.Special;
 
 namespace OCD_Tools
 {
@@ -18,6 +19,7 @@ namespace OCD_Tools
     {
         internal bool SimplifyAll { get; set; }
         internal bool FlattenAll { get; set; }
+        internal bool RepathAll { get; set; }
         /// <summary>
         /// Initializes a new instance of the Merge class.
         /// </summary>
@@ -28,6 +30,7 @@ namespace OCD_Tools
         {
             SimplifyAll = false;
             FlattenAll = false;
+            RepathAll = false;
         }
 
         /// <summary>
@@ -41,8 +44,10 @@ namespace OCD_Tools
         {
             var simplify = false;
             var flatten = false;
+            var repath = false;
 
-            if(reader.TryGetBoolean("SimplifyAll", ref simplify))
+
+            if (reader.TryGetBoolean("SimplifyAll", ref simplify))
             {
                 SimplifyAll = simplify;
             }
@@ -50,7 +55,11 @@ namespace OCD_Tools
             {
                 FlattenAll = flatten;
             }
-            
+            if (reader.TryGetBoolean("RepathAll", ref repath))
+            {
+                RepathAll = repath;
+            }
+
             return base.Read(reader);
         }
         /// <summary>
@@ -64,6 +73,7 @@ namespace OCD_Tools
         {
             writer.SetBoolean("SimplifyAll", SimplifyAll);
             writer.SetBoolean("FlattenAll", FlattenAll);
+            writer.SetBoolean("RepathAll", RepathAll);
             return base.Write(writer);
         }
 
@@ -95,6 +105,15 @@ namespace OCD_Tools
 
             var mergedTree = new GH_Structure<IGH_Goo>();
             int inputCount = this.Params.Input.Count;
+            if (RepathAll)
+            {
+                for (int i = 0; i < inputCount; i++)
+                {
+                    var param = this.Params.Input[i];
+                    param.Repath_Tree();
+                }
+            }
+            
 
             for (int i = 0; i < inputCount; i++)
             {
@@ -167,6 +186,7 @@ namespace OCD_Tools
         protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
         {
             Menu_AppendItem(menu, "Flatten All", Flatten_All_Clicked, true, FlattenAll);
+            Menu_AppendItem(menu, "Repath Inputs", Repath_Tree_Clicked, true, FlattenAll);
             Menu_AppendItem(menu, "Rewire by location", Rewire_based_on_location_clicked);
             base.AppendAdditionalComponentMenuItems(menu);
         }
@@ -204,7 +224,27 @@ namespace OCD_Tools
             this.ExpireSolution(true);
         }
 
-        internal void AutoCreateOutputs(bool recompute, int number)
+        private void Repath_Tree_Clicked(object sender, EventArgs e)
+        {
+            RepathAll = !RepathAll;
+            if (RepathAll)
+            {
+                this.Message = "Repathed All Inputs";
+            }
+            else
+            {
+                this.Message = "";
+            }
+            this.ClearData();
+            this.Params.OnParametersChanged();
+            VariableParameterMaintenance();
+            this.Locked = true;
+            this.Locked = false;
+            this.ExpireSolution(true);
+
+        }
+
+        internal void AutoCreateInputs(bool recompute, int number)
         {
 
             RecordUndoEvent("Input from params");
@@ -225,7 +265,7 @@ namespace OCD_Tools
                 }
             }
             Params.OnParametersChanged();
-            
+
             VariableParameterMaintenance();
             ExpireSolution(recompute);
             
