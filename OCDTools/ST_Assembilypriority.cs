@@ -7,6 +7,7 @@ using Grasshopper;
 using Grasshopper.GUI;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
 
 
@@ -47,11 +48,11 @@ namespace OCD_Tools
             if (editMenu == null)
                 return;
 
-            // Create the 'Lazy Tools' menu item
+            // Create the 'OCD Tools' menu item
             ToolStripMenuItem OCDTool = new ToolStripMenuItem("OCD Tools");
 
 
-            // Add the 'Lazy Tools' menu to the 'Edit' menu
+            // Add the 'OCD Tools' menu to the 'Edit' menu
             editMenu.DropDownItems.Add(OCDTool);
 
             OCDTool.DropDownItems.AddRange(OCDMenuItems.ToArray());
@@ -62,12 +63,13 @@ namespace OCD_Tools
             GH_DocumentEditor.AggregateShortcutMenuItems += GH_DocumentEditor_AggregateShortcutMenuItems;
         }
 
-        // Create sub-items for 'Lazy Tools'
+        // Create sub-items for 'OCD Tools'
         ToolStripMenuItem duplicateGroup;
         ToolStripMenuItem duplicateComponent;
         ToolStripMenuItem mergedInputs;
         ToolStripMenuItem autoConnect;
         ToolStripMenuItem appendTOEnd;
+        ToolStripMenuItem internalizePanel;
 
         private List<ToolStripMenuItem> OCDMenuItems
         {
@@ -80,17 +82,27 @@ namespace OCD_Tools
                 mergedInputs = new ToolStripMenuItem("Get Merged Inputs");
                 autoConnect = new ToolStripMenuItem("Auto Connect");
                 appendTOEnd = new ToolStripMenuItem("Auto Append");
-                // Assign event handlers for the menu items (assuming you have methods to handle these)
+                internalizePanel = new ToolStripMenuItem("Internalise Panel");
+                // Assign event handlers for the menu items 
                 duplicateGroup.Click += new EventHandler(this.DuplicateGroup_Click);
                 duplicateComponent.Click += new EventHandler(this.DuplicateComponent_Click);
                 mergedInputs.Click += new EventHandler(this.GetMergedInputs_Click);
                 autoConnect.Click += new EventHandler(this.AutoConnect_Click);
                 appendTOEnd.Click += new EventHandler(this.AppendToEnd_Click);
+                internalizePanel.Click += new EventHandler(this.Internalise_Click);
+                
+                duplicateGroup.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.D;
+                duplicateComponent.ShortcutKeys = Keys.Alt | Keys.D;
+                mergedInputs.ShortcutKeys = Keys.Alt | Keys.X;
+                autoConnect.ShortcutKeys = Keys.Alt | Keys.W;
+                appendTOEnd.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.W;
+                internalizePanel.ShortcutKeys = Keys.Alt | Keys.Q;
                 list.Add(duplicateGroup);
                 list.Add(duplicateComponent);
                 list.Add(mergedInputs);
                 list.Add(autoConnect);
                 list.Add(appendTOEnd);
+                list.Add(internalizePanel);
                 return list;
             }
         }
@@ -113,6 +125,8 @@ namespace OCD_Tools
             e.AppendItem(this.mergedInputs);
             e.AppendItem(this.autoConnect);
             e.AppendItem(this.appendTOEnd);
+            e.AppendItem(this.internalizePanel);
+
         }
         private void DuplicateGroup_Click(object sender, EventArgs e)
         {
@@ -139,7 +153,7 @@ namespace OCD_Tools
             }
             else
             {
-                
+
                 List<IGH_DocumentObject> list = document.SelectedObjects().OfType<IGH_DocumentObject>().ToList();
                 Duplicate.DuplicateComponent(document, list);
                 document.ScheduleSolution(4);
@@ -193,6 +207,21 @@ namespace OCD_Tools
             {
                 List<IGH_DocumentObject> list = document.SelectedObjects().Cast<IGH_DocumentObject>().ToList();
                 MassConnect.Append(document, list);
+                document.ScheduleSolution(4);
+            }
+        }
+
+        private void Internalise_Click(object sender, EventArgs e)
+        {
+            GH_Document document = Instances.ActiveCanvas.Document;
+            if (document.SelectedObjects().Count == 0)
+            {
+                int num = (int)MessageBox.Show("To use this feature, first select a Panel.");
+            }
+            else
+            {
+                List<GH_Panel> list = document.SelectedObjects().OfType<GH_Panel>().ToList();
+                Internalise.InternalisePanel(list);
                 document.ScheduleSolution(4);
             }
         }

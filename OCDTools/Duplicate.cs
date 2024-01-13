@@ -155,23 +155,5 @@ namespace OCD_Tools
             RecordUndoAction(GrasshopperDocument, newObjectIDs, newDocumentIO);
         }
 
-        public static string StreamDataToPanel(GH_Panel panel)
-        {
-            string flattenedString = "";
-            foreach (var path in panel.VolatileData.Paths)
-            {
-                var data = (GH_Structure<GH_String>)panel.VolatileData;
-                foreach (var branch in data.Branches) 
-                {
-                    foreach(var item in branch)
-                    {
-                        var str_item = item.ToString();
-                        flattenedString += str_item;
-                        flattenedString += "\n";
-                    }
-                }
-            }
-            return flattenedString;
-        }
     }
 }
