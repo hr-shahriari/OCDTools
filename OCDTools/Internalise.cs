@@ -27,11 +27,16 @@ namespace OCD_Tools
                 var data = (GH_Structure<GH_String>)panel.VolatileData;
                 foreach (var branch in data.Branches)
                 {
+                    int i = 0;
                     foreach (var item in branch)
                     {
+                        i++;
                         var str_item = item.ToString();
                         flattenedString += str_item;
-                        flattenedString += "\n";
+                        if (i < branch.Count)
+                        {
+                            flattenedString += "\n";
+                        }
                     }
                 }
             }

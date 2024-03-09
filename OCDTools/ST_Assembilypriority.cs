@@ -14,7 +14,7 @@ using Grasshopper.Kernel.Special;
 namespace OCD_Tools
 {
     /// <summary>
-    /// Source example for this code that I used to make this form can be found here:
+    /// Source example for this code that I used can be found here:
     /// https://discourse.mcneel.com/t/mac-compatible-way-to-add-editor-menus/106521
     /// </summary>
     public class ST_AssemblyPriority : GH_AssemblyPriority
@@ -70,6 +70,8 @@ namespace OCD_Tools
         ToolStripMenuItem autoConnect;
         ToolStripMenuItem appendTOEnd;
         ToolStripMenuItem internalizePanel;
+        ToolStripMenuItem updateNameFromSource;
+        ToolStripMenuItem updateNameFromRecipent;
 
         private List<ToolStripMenuItem> OCDMenuItems
         {
@@ -83,6 +85,8 @@ namespace OCD_Tools
                 autoConnect = new ToolStripMenuItem("Auto Connect");
                 appendTOEnd = new ToolStripMenuItem("Auto Append");
                 internalizePanel = new ToolStripMenuItem("Internalise Panel");
+                updateNameFromSource = new ToolStripMenuItem("Update Name From Source");
+                updateNameFromRecipent = new ToolStripMenuItem("Update Name From Recipent");
                 // Assign event handlers for the menu items 
                 duplicateGroup.Click += new EventHandler(this.DuplicateGroup_Click);
                 duplicateComponent.Click += new EventHandler(this.DuplicateComponent_Click);
@@ -90,19 +94,25 @@ namespace OCD_Tools
                 autoConnect.Click += new EventHandler(this.AutoConnect_Click);
                 appendTOEnd.Click += new EventHandler(this.AppendToEnd_Click);
                 internalizePanel.Click += new EventHandler(this.Internalise_Click);
-                
+                updateNameFromSource.Click += new EventHandler(this.UpdateNameFromSource_Click);
+                updateNameFromRecipent.Click += new EventHandler(this.UpdateNameFromRecipent_Click);
+
                 duplicateGroup.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.D;
                 duplicateComponent.ShortcutKeys = Keys.Alt | Keys.D;
                 mergedInputs.ShortcutKeys = Keys.Alt | Keys.X;
                 autoConnect.ShortcutKeys = Keys.Alt | Keys.W;
                 appendTOEnd.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.W;
                 internalizePanel.ShortcutKeys = Keys.Alt | Keys.Q;
+                updateNameFromSource.ShortcutKeys = Keys.Alt | Keys.S;
+                updateNameFromRecipent.ShortcutKeys = Keys.Alt | Keys.R;
                 list.Add(duplicateGroup);
                 list.Add(duplicateComponent);
                 list.Add(mergedInputs);
                 list.Add(autoConnect);
                 list.Add(appendTOEnd);
                 list.Add(internalizePanel);
+                list.Add(updateNameFromSource);
+                list.Add(updateNameFromRecipent);
                 return list;
             }
         }
@@ -126,6 +136,8 @@ namespace OCD_Tools
             e.AppendItem(this.autoConnect);
             e.AppendItem(this.appendTOEnd);
             e.AppendItem(this.internalizePanel);
+            e.AppendItem(this.updateNameFromSource);
+            e.AppendItem(this.updateNameFromRecipent);
 
         }
         private void DuplicateGroup_Click(object sender, EventArgs e)
@@ -225,7 +237,35 @@ namespace OCD_Tools
                 document.ScheduleSolution(4);
             }
         }
+        private void UpdateNameFromSource_Click(object sender, EventArgs e)
+        {
+            GH_Document document = Instances.ActiveCanvas.Document;
+            if (document.SelectedObjects().Count == 0)
+            {
+                int num = (int)MessageBox.Show("To use this feature, first select a param object or panels.");
+            }
+            else
+            {
+                List<IGH_DocumentObject> list = document.SelectedObjects().Cast<IGH_DocumentObject>().ToList();
+                ChangeName.ChangeNameOfObjectFromSources(document,list);
+                document.ScheduleSolution(4);
+            }
+        }
 
+        private void UpdateNameFromRecipent_Click(object sender, EventArgs e)
+        {
+            GH_Document document = Instances.ActiveCanvas.Document;
+            if (document.SelectedObjects().Count == 0)
+            {
+                int num = (int)MessageBox.Show("To use this feature, first select a param object, panels, sliders or valuelist.");
+            }
+            else
+            {
+                List<IGH_DocumentObject> list = document.SelectedObjects().Cast<IGH_DocumentObject>().ToList();
+                ChangeName.ChangeNameOfObjectFromRecipents(document,list);
+                document.ScheduleSolution(4);
+            }
+        }
 
 
         public GH_DocumentEditor.AggregateShortcutMenuItemsEventHandler handleThis { get; set; }
