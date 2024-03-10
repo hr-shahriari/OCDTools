@@ -16,17 +16,22 @@ namespace OCD_Tools
         internal static void ChangeNameOfObjectFromSources(GH_Document grasshopperDocument, List<IGH_DocumentObject> objects)
         {
             grasshopperDocument.UndoUtil.RecordEvent(nameof(ChangeNameOfObjectFromSources));
+            var record = new Grasshopper.Kernel.Undo.GH_UndoRecord();
             var panels = objects.OfType<GH_Panel>();
             var filteredList = objects.Where(item => IsDerivedFromGH_PersistentParam(item.GetType())).ToList(); 
             foreach (var obj in filteredList)
             {
+                
                 var castObject = (IGH_Param)obj;
                 if (castObject.Sources.Count == 0)
                 {
                     continue;
                 }
                 var sourceName = castObject.Sources[0].NickName;
+                var action = new NameUndoAction(obj,castObject.NickName, sourceName);
                 castObject.NickName = sourceName;
+                castObject.Attributes.ExpireLayout();
+                record.AddAction(action);
             }
             foreach (var panel in panels)
             {
@@ -35,8 +40,12 @@ namespace OCD_Tools
                     continue;
                 }
                 var sourceName = panel.Sources[0].NickName;
+                var action = new NameUndoAction(panel, panel.NickName, sourceName);
                 panel.NickName = sourceName;
+                panel.Attributes.ExpireLayout();
+                record.AddAction(action);
             }
+            grasshopperDocument.UndoUtil.RecordEvent(record);
         }
 
         /// <summary>
@@ -48,7 +57,7 @@ namespace OCD_Tools
         internal static void ChangeNameOfObjectFromRecipents(GH_Document grasshopperDocument, List<IGH_DocumentObject> objects)
         {
             grasshopperDocument.UndoUtil.RecordEvent(nameof(ChangeNameOfObjectFromRecipents));
-
+            var record = new Grasshopper.Kernel.Undo.GH_UndoRecord();
             var panels = objects.OfType<GH_Panel>();
             // Filter and cast logic
             var filteredList = objects.Where(item => IsDerivedFromGH_PersistentParam(item.GetType())).ToList();
@@ -64,7 +73,10 @@ namespace OCD_Tools
                     continue;
                 }
                 var recipentName = castObject.Recipients[0].NickName;
+                var action = new NameUndoAction(obj, castObject.NickName, recipentName);
                 castObject.NickName = recipentName;
+                castObject.Attributes.ExpireLayout();
+                record.AddAction(action);
             }
             foreach (var panel in panels)
             {
@@ -73,8 +85,10 @@ namespace OCD_Tools
                     continue;
                 }
                 var recipentName = panel.Recipients[0].NickName;
+                var action = new NameUndoAction(panel, panel.NickName, recipentName);
                 panel.NickName = recipentName;
                 panel.Attributes.ExpireLayout();
+                record.AddAction(action);
             }
             foreach (var slider in numberSliders)
             {
@@ -83,8 +97,10 @@ namespace OCD_Tools
                     continue;
                 }
                 var recipentName = slider.Recipients[0].NickName;
+                var action = new NameUndoAction(slider, slider.NickName, recipentName);
                 slider.NickName = recipentName;
                 slider.Attributes.ExpireLayout();
+                record.AddAction(action);
             }
             foreach (var list in valueList)
             {
@@ -93,8 +109,10 @@ namespace OCD_Tools
                     continue;
                 }
                 var recipentName = list.Recipients[0].NickName;
+                var action = new NameUndoAction(list, list.NickName, recipentName);
                 list.NickName = recipentName;
                 list.Attributes.ExpireLayout();
+                record.AddAction(action);
             }
             foreach (var toggle in toggles)
             {
@@ -103,37 +121,15 @@ namespace OCD_Tools
                     continue;
                 }
                 var recipentName = toggle.Recipients[0].NickName;
+                string oldName = toggle.NickName;
+                var action = new NameUndoAction(toggle, oldName, recipentName);
                 toggle.NickName = recipentName;
-
                 //Expire the layout so the size and everything else get updated so the component get displayed corectly.
                 toggle.Attributes.ExpireLayout();
-
+                record.AddAction(action);
             }
+            grasshopperDocument.UndoUtil.RecordEvent(record);
 
-        }
-
-        internal static IEnumerable<IGH_DocumentObject> FilterGHObjectsInheritingFromGH_PersistentParam(IEnumerable<IGH_DocumentObject> objects)
-        {
-            return objects.Where(obj => IsInheritedFromGH_PersistentParam(obj.GetType()));
-        }
-
-        internal static bool IsInheritedFromGH_PersistentParam(Type typeToCheck)
-        {
-            // Check if the type is a subclass of GH_PersistentParam<> for any T
-            var baseType = typeToCheck.BaseType;
-            while (baseType != null && baseType != typeof(object))
-            {
-                if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(GH_PersistentParam<>))
-                {
-                    var genericArguments = baseType.GetGenericArguments();
-                    if (genericArguments.Length == 1 && typeof(IGH_Goo).IsAssignableFrom(genericArguments[0]))
-                    {
-                        return true;
-                    }
-                }
-                baseType = baseType.BaseType;
-            }
-            return false;
         }
 
         // This method checks if the given type is derived from GH_PersistentParam<T>
