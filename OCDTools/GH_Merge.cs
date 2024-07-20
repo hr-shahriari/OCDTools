@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Types;
 using System.Windows.Forms;
-using Rhino.Geometry;
-using System.Runtime.CompilerServices;
 using GH_IO.Serialization;
 using OCD_Tools.Properties;
 using System.Linq;
-using Grasshopper.Kernel.Special;
 
 namespace OCD_Tools
 {

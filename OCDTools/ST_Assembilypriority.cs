@@ -26,16 +26,7 @@ namespace OCD_Tools
             Grasshopper.Instances.ComponentServer.AddAlias("col", new Guid("D84940C2-E0D6-41A7-9399-40771BD7D8CA"));
             Instances.CanvasCreated += RegisterNewMenuItems;
 
-            //Check if the IgnoreOutputsParams.xml file exists, load it
-            //if not do nothing
-            try
-            {
-                ignoreParamDictionary = IgnoreParamDictionary.DeserializeFromXml();
-            }
-            catch (Exception)
-            {
-                //do nothing
-            }
+            updateIgnoreParamXML();
 
             return GH_LoadingInstruction.Proceed;
         }
@@ -89,6 +80,7 @@ namespace OCD_Tools
         ToolStripMenuItem updateNameFromSource;
         ToolStripMenuItem updateNameFromRecipent;
         ToolStripMenuItem makeParamNodesTextDisplay;
+        ToolStripMenuItem updateIgnoreXml;
 
         private List<ToolStripMenuItem> OCDMenuItems
         {
@@ -105,6 +97,7 @@ namespace OCD_Tools
                 updateNameFromSource = new ToolStripMenuItem("Update Name From Source");
                 updateNameFromRecipent = new ToolStripMenuItem("Update Name From Recipent");
                 makeParamNodesTextDisplay = new ToolStripMenuItem("Param IconToText");
+                updateIgnoreXml = new ToolStripMenuItem("Reload PramIgnore");
                 // Assign event handlers for the menu items 
                 duplicateGroup.Click += new EventHandler(this.DuplicateGroup_Click);
                 duplicateComponent.Click += new EventHandler(this.DuplicateComponent_Click);
@@ -115,6 +108,7 @@ namespace OCD_Tools
                 updateNameFromSource.Click += new EventHandler(this.UpdateNameFromSource_Click);
                 updateNameFromRecipent.Click += new EventHandler(this.UpdateNameFromRecipent_Click);
                 makeParamNodesTextDisplay.Click += new EventHandler(this.MakeParamNodesTextDisplay_Click);
+                updateIgnoreXml.Click += new EventHandler(this.UpdateIgnoreXml_Click);
 
                 duplicateGroup.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.D;
                 duplicateComponent.ShortcutKeys = Keys.Alt | Keys.D;
@@ -133,6 +127,7 @@ namespace OCD_Tools
                 list.Add(updateNameFromSource);
                 list.Add(updateNameFromRecipent);
                 list.Add(makeParamNodesTextDisplay);
+                list.Add(updateIgnoreXml);
                 return list;
             }
         }
@@ -161,6 +156,7 @@ namespace OCD_Tools
             e.AppendItem(this.makeParamNodesTextDisplay);
 
         }
+
         private void DuplicateGroup_Click(object sender, EventArgs e)
         {
             GH_Document document = Instances.ActiveCanvas.Document;
@@ -302,6 +298,27 @@ namespace OCD_Tools
                 UpdateParamsIconDisplay.UpdateParamObjectIconDisplay(document, list);
                 document.ScheduleSolution(4);
             }
+        }
+
+        private void UpdateIgnoreXml_Click(object sender, EventArgs e)
+        {
+            updateIgnoreParamXML();
+
+        }
+
+        private void updateIgnoreParamXML()
+        {
+            //Check if the IgnoreOutputsParams.xml file exists, load it
+            //if not do nothing
+            try
+            {
+                ignoreParamDictionary = IgnoreParamDictionary.DeserializeFromXml();
+            }
+            catch (Exception)
+            {
+                //do nothing
+            }
+
         }
 
 

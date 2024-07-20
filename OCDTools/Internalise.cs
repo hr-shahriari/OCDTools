@@ -17,6 +17,8 @@ namespace OCD_Tools
             {
                 panel.UserText = StreamDataToPanel(panel);
                 panel.RemoveAllSources();
+                panel.Properties.Multiline = false;
+                panel.ExpireSolution(true);
             }
         }
         private static string StreamDataToPanel(GH_Panel panel)
@@ -35,7 +37,7 @@ namespace OCD_Tools
                         flattenedString += str_item;
                         if (i < branch.Count)
                         {
-                            flattenedString += "\n";
+                            flattenedString += System.Environment.NewLine;
                         }
                     }
                 }

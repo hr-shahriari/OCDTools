@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
+using OCD_Tools.Properties;
 using Rhino.Geometry;
 
 namespace OCD_Tools
@@ -142,7 +143,7 @@ namespace OCD_Tools
             {
                 //You can add image files to your project resources and access them like this:
                 // return Resources.IconForThisComponent;
-                return null;
+                return Resources.ParamIgnore;
             }
         }
 

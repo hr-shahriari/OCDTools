@@ -302,8 +302,9 @@ namespace CustomUI
     /// </summary>
     public class ButtonColours
     {
+
         //Set colours for Component UI
-        static readonly Color Primary = Color.FromArgb(255, 229, 27, 36);
+        static readonly Color Primary = Color.FromArgb(255, 128, 128, 128);
         static readonly Color Primary_light = WhiteOverlay(Primary, 0.32);
         static readonly Color Primary_dark = Overlay(Primary, Color.Black, 0.32);
         public static Brush ButtonColor
