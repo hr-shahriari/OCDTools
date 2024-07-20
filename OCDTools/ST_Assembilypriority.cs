@@ -19,13 +19,29 @@ namespace OCD_Tools
     /// </summary>
     public class ST_AssemblyPriority : GH_AssemblyPriority
     {
+        public IgnoreParamDictionary ignoreParamDictionary;
 
         public override GH_LoadingInstruction PriorityLoad()
         {
             Grasshopper.Instances.ComponentServer.AddAlias("col", new Guid("D84940C2-E0D6-41A7-9399-40771BD7D8CA"));
             Instances.CanvasCreated += RegisterNewMenuItems;
+
+            //Check if the IgnoreOutputsParams.xml file exists, load it
+            //if not do nothing
+            try
+            {
+                ignoreParamDictionary = IgnoreParamDictionary.DeserializeFromXml();
+            }
+            catch (Exception)
+            {
+                //do nothing
+            }
+
             return GH_LoadingInstruction.Proceed;
         }
+
+       
+        
 
 
         private void RegisterNewMenuItems(GH_Canvas canvas)
@@ -204,12 +220,12 @@ namespace OCD_Tools
             GH_Document document = Instances.ActiveCanvas.Document;
             if (document.SelectedObjects().Count == 0)
             {
-                int num = (int)MessageBox.Show("To use this feature, first select a component.");
+                //MassConnect.SelectParams();
             }
             else
             {
                 List<IGH_DocumentObject> list = document.SelectedObjects().Cast<IGH_DocumentObject>().ToList();
-                MassConnect.Connect(document, list);
+                MassConnect.Connect(document, list, ignoreParamDictionary);
                 document.ScheduleSolution(4);
             }
         }
@@ -223,7 +239,7 @@ namespace OCD_Tools
             else
             {
                 List<IGH_DocumentObject> list = document.SelectedObjects().Cast<IGH_DocumentObject>().ToList();
-                MassConnect.Append(document, list);
+                MassConnect.Append(document, list, ignoreParamDictionary);
                 document.ScheduleSolution(4);
             }
         }

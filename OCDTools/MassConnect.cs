@@ -1,8 +1,11 @@
-﻿using Grasshopper.Kernel;
+﻿using Grasshopper;
+using Grasshopper.Kernel;
 using Grasshopper.Kernel.Undo.Actions;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Management.Instrumentation;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace OCD_Tools
 {
@@ -11,7 +14,7 @@ namespace OCD_Tools
     /// </summary>
     public class MassConnect
     {
-        internal static void Connect(GH_Document GrasshopperDocument, List<IGH_DocumentObject> list)
+        internal static void Connect(GH_Document GrasshopperDocument, List<IGH_DocumentObject> list, IgnoreParamDictionary ignoreParamDictionary)
         {
             //List and sort IGH_Components list based on the X property of the location of the component
             List<IGH_DocumentObject> sortedList = list.OrderBy(x => x.Attributes.Pivot.X).ToList();
@@ -27,8 +30,21 @@ namespace OCD_Tools
             
             foreach (IGH_Component ighComponent in (newList.OfType<IGH_Component>().ToList()))
             {
-                paramList.AddRange((IEnumerable<IGH_Param>)ighComponent.Params.Output);
+                //make a list of all of the output params
+                List<IGH_Param> outputParams = ighComponent.Params.Output.ToList();
+                //Check if the component is in the ignoreParamDictionary and if it is chcek the names in outputParams and remove them from the list
+                List<string> ignoreParams = new List<string>();
+                if (ignoreParamDictionary.TryGetValue(ighComponent.Name, out ignoreParams))
+                {
+                    foreach (string ignoreParam in ignoreParams)
+                    {
+                        outputParams.RemoveAll(x => x.Name == ignoreParam);
+                    }
+                }
+                paramList.AddRange((IEnumerable<IGH_Param>)outputParams);
             }
+
+
 
             int numberOfSources = paramList.Count;
             //order paramList based on the Y property of the location of the param
@@ -60,7 +76,7 @@ namespace OCD_Tools
             lastComponent.ExpireSolution(true);
 
         }
-        internal static void Append(GH_Document GrasshopperDocument, List<IGH_DocumentObject> list)
+        internal static void Append(GH_Document GrasshopperDocument, List<IGH_DocumentObject> list, IgnoreParamDictionary ignoreParamDictionary)
         {
             //List and sort IGH_Components list based on the X property of the location of the component
             List<IGH_DocumentObject> sortedList = list.OrderBy(x => x.Attributes.Pivot.X).ToList();
@@ -76,7 +92,18 @@ namespace OCD_Tools
 
             foreach (IGH_Component ighComponent in (newList.OfType<IGH_Component>().ToList()))
             {
-                paramList.AddRange((IEnumerable<IGH_Param>)ighComponent.Params.Output);
+                //make a list of all of the output params
+                List<IGH_Param> outputParams = ighComponent.Params.Output.ToList();
+                //Check if the component is in the ignoreParamDictionary and if it is chcek the names in outputParams and remove them from the list
+                List<string> ignoreParams = new List<string>();
+                if (ignoreParamDictionary.TryGetValue(ighComponent.Name, out ignoreParams))
+                {
+                    foreach (string ignoreParam in ignoreParams)
+                    {
+                        outputParams.RemoveAll(x => x.Name == ignoreParam);
+                    }
+                }
+                paramList.AddRange((IEnumerable<IGH_Param>)outputParams);
             }
 
             //Take the number of the inputs of the last component that already have a source and calculate the additional number of sources needed
@@ -122,5 +149,51 @@ namespace OCD_Tools
             lastComponent.ExpireSolution(true);
 
         }
+
+        //internal static void selectParams()
+        //{
+
+        //    GH_Document GrasshopperDocument = Instances.ActiveCanvas.Document;
+        //    //make a list that every time the user selects a param it will be added to the list
+        //    List<IGH_DocumentObject> selectedParams = new List<IGH_DocumentObject>();
+        //    //select the param
+        //    //GrasshopperDocument.FindAttributeByGrip();
+        //    //While we haven't selected enter allow adding selection to the list
+
+        //    ((Control)Grasshopper.Instances.ActiveCanvas).MouseMove += (sender, e) =>
+        //    {
+        //        //if the user selects a param add it to the list
+        //        if (e.Button == MouseButtons.Left)
+        //        {
+        //            selectedParams.AddRange(GrasshopperDocument.SelectedObjects());
+        //        }
+        //    };
+
+        //}
+
+        //internal static void SelectParams()
+        //{
+        //    GH_Document GrasshopperDocument = Instances.ActiveCanvas.Document;
+        //    List<IGH_DocumentObject> selectedParams = new List<IGH_DocumentObject>();
+
+        //    // Register the MouseMove event handler
+        //    ((Control)Grasshopper.Instances.ActiveCanvas).MouseMove += async (sender, e) =>
+        //    {
+        //        // If the user selects a param, add it to the list
+        //        if (e.Button == MouseButtons.Left)
+        //        {
+        //            selectedParams.AddRange(GrasshopperDocument.SelectedObjects());
+        //        }
+
+        //        // Check if the Enter key has been pressed
+        //        if (Control.ModifierKeys == Keys.Enter)
+        //        {
+        //            // Stop listening to MouseMove events
+        //            ((Control)Grasshopper.Instances.ActiveCanvas).MouseMove -= null;
+        //        }
+
+        //        await Task.Delay(10); // Small delay to prevent freezing
+        //    };
+        //}
     }
 }
