@@ -9,7 +9,7 @@ using GH_IO.Serialization;
 using OCD_Tools.Properties;
 using System.Linq;
 
-namespace OCD_Tools
+namespace OCD_Tools.Components
 {
     public class GH_Merge : GH_Component, IGH_VariableParameterComponent
     {
@@ -77,7 +77,7 @@ namespace OCD_Tools
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
-        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+        protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter(string.Empty, string.Empty, string.Empty, GH_ParamAccess.tree);
         }
@@ -85,7 +85,7 @@ namespace OCD_Tools
         /// <summary>
         /// Registers all the output parameters for this component.
         /// </summary>
-        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("MergeResult", "MR", "Result of merge operation", GH_ParamAccess.tree);
         }
@@ -100,16 +100,16 @@ namespace OCD_Tools
                 return;
 
             var mergedTree = new GH_Structure<IGH_Goo>();
-            int inputCount = this.Params.Input.Count;
+            int inputCount = Params.Input.Count;
             if (RepathAll)
             {
                 for (int i = 0; i < inputCount; i++)
                 {
-                    var param = this.Params.Input[i];
+                    var param = Params.Input[i];
                     param.Repath_Tree();
                 }
             }
-            
+
 
             for (int i = 0; i < inputCount; i++)
             {
@@ -144,7 +144,7 @@ namespace OCD_Tools
         /// <returns></returns>
         public bool CanRemoveParameter(GH_ParameterSide side, int index)
         {
-            return side != GH_ParameterSide.Output && this.Params.Input.Count > 1;
+            return side != GH_ParameterSide.Output && Params.Input.Count > 1;
         }
 
 
@@ -160,17 +160,17 @@ namespace OCD_Tools
 
         public void VariableParameterMaintenance()
         {
-            int num = this.Params.Input.Count;
+            int num = Params.Input.Count;
             for (int index = 0; index < num; index++)
             {
-                if (this.Params.Input[index].SourceCount == 0)
+                if (Params.Input[index].SourceCount == 0)
                 {
-                    this.Params.Input[index].Name = $"Data {index + 1}";
-                    this.Params.Input[index].NickName = $"D{index + 1}";
-                    this.Params.Input[index].Description = $"Data stream {index + 1}";
-                    this.Params.Input[index].Optional = true;
-                    this.Params.Input[index].MutableNickName = false;
-                    this.Params.Input[index].Access = GH_ParamAccess.tree;
+                    Params.Input[index].Name = $"Data {index + 1}";
+                    Params.Input[index].NickName = $"D{index + 1}";
+                    Params.Input[index].Description = $"Data stream {index + 1}";
+                    Params.Input[index].Optional = true;
+                    Params.Input[index].MutableNickName = false;
+                    Params.Input[index].Access = GH_ParamAccess.tree;
                 }
                 else
                 {
@@ -190,7 +190,7 @@ namespace OCD_Tools
         private void Flatten_All_Clicked(object sender, EventArgs e)
         {
             FlattenAll = !FlattenAll;
-            foreach (var param in this.Params.Input)
+            foreach (var param in Params.Input)
             {
                 if (FlattenAll)
                 {
@@ -203,21 +203,21 @@ namespace OCD_Tools
                     OnObjectChanged(GH_ObjectEventType.DataMapping);
                 }
             }
-            
-                if (FlattenAll)
-                {
-                    this.Message = "Flattend";
-                }
-                else
-                {
-                    this.Message = "";
-                }
-            this.ClearData();
-            this.Params.OnParametersChanged();
+
+            if (FlattenAll)
+            {
+                Message = "Flattend";
+            }
+            else
+            {
+                Message = "";
+            }
+            ClearData();
+            Params.OnParametersChanged();
             VariableParameterMaintenance();
-            this.Locked = true;
-            this.Locked = false;
-            this.ExpireSolution(true);
+            Locked = true;
+            Locked = false;
+            ExpireSolution(true);
         }
 
         private void Repath_Tree_Clicked(object sender, EventArgs e)
@@ -225,18 +225,18 @@ namespace OCD_Tools
             RepathAll = !RepathAll;
             if (RepathAll)
             {
-                this.Message = "Repathed All Inputs";
+                Message = "Repathed All Inputs";
             }
             else
             {
-                this.Message = "";
+                Message = "";
             }
-            this.ClearData();
-            this.Params.OnParametersChanged();
+            ClearData();
+            Params.OnParametersChanged();
             VariableParameterMaintenance();
-            this.Locked = true;
-            this.Locked = false;
-            this.ExpireSolution(true);
+            Locked = true;
+            Locked = false;
+            ExpireSolution(true);
 
         }
 
@@ -264,7 +264,7 @@ namespace OCD_Tools
 
             VariableParameterMaintenance();
             ExpireSolution(recompute);
-            
+
         }
 
         /// <summary>
@@ -274,15 +274,15 @@ namespace OCD_Tools
         /// <param name="e"></param>
         private void Rewire_based_on_location_clicked(object sender, EventArgs e)
         {
-            var inputSources = this.Params.Input.SelectMany(x => x.Sources).OrderBy(x=> x.Attributes.Pivot.Y).ToList();
-            for (int i =0; i < inputSources.Count; i++)
+            var inputSources = Params.Input.SelectMany(x => x.Sources).OrderBy(x => x.Attributes.Pivot.Y).ToList();
+            for (int i = 0; i < inputSources.Count; i++)
             {
-                var input = this.Params.Input[i];
-                this.OnPingDocument().UndoUtil.RecordWireEvent("Wire", input);
+                var input = Params.Input[i];
+                OnPingDocument().UndoUtil.RecordWireEvent("Wire", input);
                 input.RemoveAllSources();
                 input.AddSource(inputSources[i]);
             }
-            this.ExpireSolution(true);
+            ExpireSolution(true);
         }
 
 

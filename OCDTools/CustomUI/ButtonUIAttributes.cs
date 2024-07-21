@@ -7,7 +7,6 @@ using Grasshopper.Kernel;
 using System;
 using System.Drawing;
 using System.Collections.Generic;
-using Rhino.Display;
 using System.Drawing.Drawing2D;
 
 namespace CustomUI

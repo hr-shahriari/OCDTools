@@ -32,7 +32,14 @@ namespace OCD_Tools
             ignoreParams = null;
             return false;
         }
-
+        public void Update(string componentName, List<string> ignoreParams)
+        {
+            var entry = Components.Find(e => e.Key == componentName);
+            if (entry != null)
+            {
+                entry.Value = ignoreParams;
+            }
+        }
         public void SerializeToXml()
         {
             //file path of IgnoreOutputsParams.xml should be where this assambly file is located

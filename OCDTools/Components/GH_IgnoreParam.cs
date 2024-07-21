@@ -6,7 +6,7 @@ using Grasshopper.Kernel.Parameters;
 using OCD_Tools.Properties;
 using Rhino.Geometry;
 
-namespace OCD_Tools
+namespace OCD_Tools.Components
 {
     public class GH_IgnoreParam : GH_Component, IGH_VariableParameterComponent
     {
@@ -22,7 +22,7 @@ namespace OCD_Tools
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
-        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+        protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter(string.Empty, string.Empty, string.Empty, GH_ParamAccess.item);
         }
@@ -30,7 +30,7 @@ namespace OCD_Tools
         /// <summary>
         /// Registers all the output parameters for this component.
         /// </summary>
-        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
         }
 
@@ -42,7 +42,7 @@ namespace OCD_Tools
 
         public void FunctionToRunOnClick()
         {
-            List<IGH_Param> inputParams = this.Params.Input;
+            List<IGH_Param> inputParams = Params.Input;
             UpdateIgnoreParams(inputParams);
         }
 
@@ -73,10 +73,13 @@ namespace OCD_Tools
                     string componentName = param.Sources[0].Attributes.Parent.DocObject.Name;
                     if (!ignoreParamDictionary.TryGetValue(componentName, out ignoreParams))
                     {
-                        ignoreParams = new List<string>();                        
+                        ignoreParams = new List<string>();
+                        ignoreParamDictionary.Add(componentName, ignoreParams);
                     }
                     ignoreParams.Add(param.Sources[0].Name);
-                    ignoreParamDictionary.Add(componentName, ignoreParams);
+                    //create a set with unique members for the ignoreParams
+                    ignoreParams = new List<string>(new HashSet<string>(ignoreParams));
+                    ignoreParamDictionary.Update(componentName, ignoreParams);
                 }
             }
 
@@ -100,7 +103,7 @@ namespace OCD_Tools
 
         public bool CanRemoveParameter(GH_ParameterSide side, int index)
         {
-            return side != GH_ParameterSide.Output && this.Params.Input.Count > 1;
+            return side != GH_ParameterSide.Output && Params.Input.Count > 1;
         }
 
         public IGH_Param CreateParameter(GH_ParameterSide side, int index)
@@ -115,17 +118,17 @@ namespace OCD_Tools
 
         public void VariableParameterMaintenance()
         {
-            int num = this.Params.Input.Count;
+            int num = Params.Input.Count;
             for (int index = 0; index < num; index++)
             {
-                if (this.Params.Input[index].SourceCount == 0)
+                if (Params.Input[index].SourceCount == 0)
                 {
-                    this.Params.Input[index].Name = $"Param {index + 1}";
-                    this.Params.Input[index].NickName = $"P{index + 1}";
-                    this.Params.Input[index].Description = $"Output Param to Ignore {index + 1}";
-                    this.Params.Input[index].Optional = true;
-                    this.Params.Input[index].MutableNickName = false;
-                    this.Params.Input[index].Access = GH_ParamAccess.tree;
+                    Params.Input[index].Name = $"Param {index + 1}";
+                    Params.Input[index].NickName = $"P{index + 1}";
+                    Params.Input[index].Description = $"Output Param to Ignore {index + 1}";
+                    Params.Input[index].Optional = true;
+                    Params.Input[index].MutableNickName = false;
+                    Params.Input[index].Access = GH_ParamAccess.tree;
                 }
                 else
                 {
