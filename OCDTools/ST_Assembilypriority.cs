@@ -216,7 +216,7 @@ namespace OCD_Tools
             GH_Document document = Instances.ActiveCanvas.Document;
             if (document.SelectedObjects().Count == 0)
             {
-                //MassConnect.SelectParams();
+                MassSelect.SelectParams();
             }
             else
             {

@@ -50,7 +50,6 @@ namespace OCD_Tools.Components
         public void UpdateIgnoreParams(List<IGH_Param> inputParams)
         {
 
-            //try loding the IgnoreOutputsParams.xml from where this assambly file is located, if not create one
             IgnoreParamDictionary ignoreParamDictionary;
             try
             {
@@ -60,10 +59,7 @@ namespace OCD_Tools.Components
             {
                 ignoreParamDictionary = new IgnoreParamDictionary();
             }
-            //Make a IgnoreParamDictionary class from this params names and Check which components these params come from
 
-
-            //If the component name is there add the param name to the list in the dictonary
 
             foreach (IGH_Param param in inputParams)
             {
@@ -83,7 +79,6 @@ namespace OCD_Tools.Components
                 }
             }
 
-            //Serialize the IgnoreParamDictionary to IgnoreOutputsParams.xml
             ignoreParamDictionary.SerializeToXml();
         }
 
