@@ -10,6 +10,7 @@ using System;
 using Rhino.Geometry;
 using Grasshopper.GUI.SettingsControls;
 using System.Linq;
+using Point = System.Drawing.Point;
 
 internal class MassSelect
 {
@@ -38,8 +39,6 @@ internal class MassSelect
         
         // Find the mouse cursor position
         var mousePosition = Instances.ActiveCanvas.CursorCanvasPosition;
-        var cursorPosition = Control.MousePosition;
-        DisplayForm(cursorPosition);
         var findAttr = GrasshopperDocument.FindAttribute(mousePosition, false);
         var findGrip = GrasshopperDocument.FindAttributeByGrip(mousePosition,false,false,true);
         IGH_Attributes selectedParam = null;
@@ -52,7 +51,8 @@ internal class MassSelect
             selectedParam = findGrip;
         }
 
-
+        var cursorPosition = Control.MousePosition;
+        DisplayForm(cursorPosition);
         try
         {
             var docObject = (IGH_Param)selectedParam.DocObject;
@@ -64,14 +64,15 @@ internal class MassSelect
                     selectedParams.Add(docObject);
                     guids.Add(docObject.InstanceGuid);
                 }
+                UpdateForm(cursorPosition);
             }
             
         }
         catch
         {
-
         }
-       
+        
+        
     }
 
     private static void Canvas_KeyDown(object sender, KeyEventArgs e)
@@ -106,8 +107,8 @@ internal class MassSelect
             {
                 _form = new Form();
                 _form.StartPosition = FormStartPosition.Manual;
-                _form.Width = 100;
-                _form.Height = 20 * selectedParams.Count;
+                _form.Width = 80;
+                _form.Height = 12 * selectedParams.Count;
                 _form.BackColor = Color.WhiteSmoke;
                 _form.TransparencyKey = _form.BackColor;
                 _form.FormBorderStyle = FormBorderStyle.None;
@@ -119,36 +120,56 @@ internal class MassSelect
             // Update the form's position to be to the left of the mouse cursor
             int formX = (int)mousePosition.X - _form.Width; // Adjust as necessary
             int formY = (int)mousePosition.Y;
-            _form.Height = 12 * selectedParams.Count ;
+            _form.Height = 12 * selectedParams.Count;
+            _form.Paint -= new PaintEventHandler(pictureBox1_Paint);
+            _form.Paint += new PaintEventHandler(pictureBox1_Paint);
             _form.SetDesktopLocation(formX, formY);
+            _form.Invalidate();
             _form.Update();
+            _form.Refresh();
         }
     }
 
+    private static void UpdateForm(System.Drawing.Point mousePosition)
+    {
+        if (_form != null)
+        {
+            _form.Height = 12 * selectedParams.Count + 20; // Adjust height as necessary
+            _form.Paint -= new PaintEventHandler(pictureBox1_Paint);
+            _form.Paint += new PaintEventHandler(pictureBox1_Paint);
+            _form.Invalidate();
+            _form.Update();
+        }
+        else
+        {
+            DisplayForm(mousePosition);
+
+        }
+    }
 
     private static void pictureBox1_Paint(object sender, PaintEventArgs e)
     {
-        Graphics g = e.Graphics;
-        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        //Graphics g = e.Graphics;
+        //g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-        // Define the rectangle
-        Rectangle rect = new Rectangle(0, 0, _form.Width, _form.Height);
+        //// Define the rectangle
+        //Rectangle rect = new Rectangle(0, 0, _form.Width, _form.Height);
 
-        // Define the color and transparency
-        Color color = Color.FromArgb(76, 173, 216, 230); // 30% transparency, light Persian blue
-        using (Brush brush = new SolidBrush(color))
-        {
-            // Draw the rounded rectangle
-            int radius = 20; // Corner radius
-            System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath();
-            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
-            path.AddArc(rect.X + rect.Width - radius, rect.Y, radius, radius, 270, 90);
-            path.AddArc(rect.X + rect.Width - radius, rect.Y + rect.Height - radius, radius, radius, 0, 90);
-            path.AddArc(rect.X, rect.Y + rect.Height - radius, radius, radius, 90, 90);
-            path.CloseAllFigures();
+        //// Define the color and transparency
+        //Color color = Color.FromArgb(20, 173, 216, 230); // 30% transparency, light Persian blue
+        //using (Brush brush = new SolidBrush(color))
+        //{
+        //    // Draw the rounded rectangle
+        //    int radius = 4; // Corner radius
+        //    System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath();
+        //    path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+        //    path.AddArc(rect.X + rect.Width - radius, rect.Y, radius, radius, 270, 90);
+        //    path.AddArc(rect.X + rect.Width - radius, rect.Y + rect.Height - radius, radius, radius, 0, 90);
+        //    path.AddArc(rect.X, rect.Y + rect.Height - radius, radius, radius, 90, 90);
+        //    path.CloseAllFigures();
 
-            g.FillPath(brush, path);
-        }
+        //    g.FillPath(brush, path);
+        //}
 
         //Join the string and Only display the first ten selectedParams members and if it is mode display "..."
         var nameList = selectedParams.Take(10).ToList();
@@ -159,4 +180,5 @@ internal class MassSelect
         }
         e.Graphics.DrawString(names, new Font("Arial", 8), Brushes.Black, new PointF(10, 10));
     }
+
 }
