@@ -18,6 +18,7 @@ internal class MassSelect
     private static List<IGH_Param> selectedParams = new List<IGH_Param>();
     private static List<Guid> guids = new List<Guid>();
     private static Form _form;
+    private static Label _label;
 
 
     public static void SelectParams()
@@ -36,11 +37,11 @@ internal class MassSelect
     {
         GH_Document GrasshopperDocument = Instances.ActiveCanvas.Document;
         Control canvas = (Control)Grasshopper.Instances.ActiveCanvas;
-        
+
         // Find the mouse cursor position
         var mousePosition = Instances.ActiveCanvas.CursorCanvasPosition;
         var findAttr = GrasshopperDocument.FindAttribute(mousePosition, false);
-        var findGrip = GrasshopperDocument.FindAttributeByGrip(mousePosition,false,false,true);
+        var findGrip = GrasshopperDocument.FindAttributeByGrip(mousePosition, false, false, true);
         IGH_Attributes selectedParam = null;
         if (findAttr != null)
         {
@@ -64,15 +65,16 @@ internal class MassSelect
                     selectedParams.Add(docObject);
                     guids.Add(docObject.InstanceGuid);
                 }
-                UpdateForm(cursorPosition);
+
             }
-            
+
         }
         catch
         {
+            UpdateForm();
         }
-        
-        
+        UpdateForm();
+
     }
 
     private static void Canvas_KeyDown(object sender, KeyEventArgs e)
@@ -99,86 +101,94 @@ internal class MassSelect
         }
     }
 
-    private static void DisplayForm(System.Drawing.Point mousePosition)
+
+    private static void DisplayForm(Point mousePosition)
     {
         if (selectedParams.Count > 0)
         {
             if (_form == null)
             {
-                _form = new Form();
+                _form = new TransparentForm();
                 _form.StartPosition = FormStartPosition.Manual;
-                _form.Width = 80;
-                _form.Height = 12 * selectedParams.Count;
-                _form.BackColor = Color.WhiteSmoke;
-                _form.TransparencyKey = _form.BackColor;
+                _form.Width = 200; // Adjust width if needed
                 _form.FormBorderStyle = FormBorderStyle.None;
                 _form.ShowInTaskbar = false;
-                _form.Paint += new PaintEventHandler(pictureBox1_Paint);
+
+                _label = new Label();
+                _label.AutoSize = true;
+                _label.Font = new Font("Arial", 10);
+                _label.Location = new Point(10, 10);
+                _form.Controls.Add(_label);
+
                 _form.Show((IWin32Window)Instances.DocumentEditor);
             }
 
-            // Update the form's position to be to the left of the mouse cursor
-            int formX = (int)mousePosition.X - _form.Width; // Adjust as necessary
-            int formY = (int)mousePosition.Y;
-            _form.Height = 12 * selectedParams.Count;
-            _form.Paint -= new PaintEventHandler(pictureBox1_Paint);
-            _form.Paint += new PaintEventHandler(pictureBox1_Paint);
+            // Update the form's size and position to be to the left of the mouse cursor
+            int formX = mousePosition.X - _form.Width - 30; // Adjust as necessary
+            int formY = mousePosition.Y + 30;
             _form.SetDesktopLocation(formX, formY);
-            _form.Invalidate();
-            _form.Update();
-            _form.Refresh();
+            UpdateForm();
         }
     }
 
-    private static void UpdateForm(System.Drawing.Point mousePosition)
+    private static void UpdateForm()
     {
         if (_form != null)
         {
-            _form.Height = 12 * selectedParams.Count + 20; // Adjust height as necessary
-            _form.Paint -= new PaintEventHandler(pictureBox1_Paint);
-            _form.Paint += new PaintEventHandler(pictureBox1_Paint);
+            var nameList = selectedParams.Take(10).ToList();
+            string names = string.Join("\n", nameList.ConvertAll(p => p.NickName));
+            if (selectedParams.Count > 10)
+            {
+                names += "\n...";
+            }
+            _label.Text = names;
+
+            using (Graphics g = _form.CreateGraphics())
+            {
+                SizeF stringSize = g.MeasureString(names, _label.Font);
+                _form.Width = (int)stringSize.Width + 30; // Add padding
+                _form.Height = (int)stringSize.Height + 30; // Add padding
+            }
+
             _form.Invalidate();
             _form.Update();
         }
-        else
-        {
-            DisplayForm(mousePosition);
-
-        }
     }
 
-    private static void pictureBox1_Paint(object sender, PaintEventArgs e)
+    private class TransparentForm : Form
     {
-        //Graphics g = e.Graphics;
-        //g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-
-        //// Define the rectangle
-        //Rectangle rect = new Rectangle(0, 0, _form.Width, _form.Height);
-
-        //// Define the color and transparency
-        //Color color = Color.FromArgb(20, 173, 216, 230); // 30% transparency, light Persian blue
-        //using (Brush brush = new SolidBrush(color))
-        //{
-        //    // Draw the rounded rectangle
-        //    int radius = 4; // Corner radius
-        //    System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath();
-        //    path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
-        //    path.AddArc(rect.X + rect.Width - radius, rect.Y, radius, radius, 270, 90);
-        //    path.AddArc(rect.X + rect.Width - radius, rect.Y + rect.Height - radius, radius, radius, 0, 90);
-        //    path.AddArc(rect.X, rect.Y + rect.Height - radius, radius, radius, 90, 90);
-        //    path.CloseAllFigures();
-
-        //    g.FillPath(brush, path);
-        //}
-
-        //Join the string and Only display the first ten selectedParams members and if it is mode display "..."
-        var nameList = selectedParams.Take(10).ToList();
-        string names = string.Join("\n", nameList.ConvertAll(p => p.NickName));
-        if (selectedParams.Count > 10)
+        public TransparentForm()
         {
-            names += "\n...";
+            this.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+            this.BackColor = Color.Gray; // This color will be used as transparency key
+            this.TransparencyKey = this.BackColor;
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.TopMost = true;
         }
-        e.Graphics.DrawString(names, new Font("Arial", 8), Brushes.Black, new PointF(10, 10));
-    }
 
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            using (Graphics g = e.Graphics)
+            {
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                using (Pen pen = new Pen(Color.FromArgb(76, 173, 216, 230), 2))
+                {
+                    // Draw the rounded rectangle
+                    int radius = 10; // Corner radius
+                    int margin = 4; // Margin around the label
+                    System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath();
+                    Rectangle rect = new Rectangle(margin, margin, this.Width - 2 * margin, this.Height - 2 * margin);
+                    path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+                    path.AddArc(rect.X + rect.Width - radius, rect.Y, radius, radius, 270, 90);
+                    path.AddArc(rect.X + rect.Width - radius, rect.Y + rect.Height - radius, radius, radius, 0, 90);
+                    path.AddArc(rect.X, rect.Y + rect.Height - radius, radius, radius, 90, 90);
+                    path.CloseAllFigures();
+
+                    g.DrawPath(pen, path);
+                }
+            }
+        }
+
+    }
 }
