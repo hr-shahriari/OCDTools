@@ -6,6 +6,10 @@ using Grasshopper.Kernel;
 using System;
 using System.Linq;
 using Point = System.Drawing.Point;
+using OCD_Tools;
+using Grasshopper.Kernel.Undo.Actions;
+using Grasshopper.Kernel.Undo;
+using Rhino.UI;
 
 internal class MassSelect
 {
@@ -69,18 +73,29 @@ internal class MassSelect
         }
 
         UpdateForm();
-
+        //Record the event
+        var undoRecord = new GH_UndoRecord("UndoWires");
         if (e.Button == MouseButtons.Left)
         {
             var mousePosition = Instances.ActiveCanvas.CursorCanvasPosition;
             var inputParam = (IGH_Param)GrasshopperDocument.FindAttributeByGrip(mousePosition, false, true, false).DocObject;
+            
             if (inputParam != null)
             {
+
                 if (inputParam.Sources.Count == 0)
                 {
+
                     if (selectedParams.Count > 0)
                     {
+                        GH_WireAction ghWireAction = new GH_WireAction(selectedParams[0]);
+                        GH_WireAction inputParamAction = new GH_WireAction(inputParam);
+                        //GrasshopperDocument.UndoUtil.RecordWireEvent("Wire", selectedParams[0]);
+                        //GrasshopperDocument.UndoUtil.RecordWireEvent("WireInput", inputParam);
+                        undoRecord.AddAction(ghWireAction);
+                        undoRecord.AddAction(inputParamAction);
                         inputParam.AddSource(selectedParams[0]);
+                        GrasshopperDocument.UndoUtil.RecordEvent(undoRecord);
                         selectedParams.RemoveAt(0);
                         guids.RemoveAt(0);
                         inputParam = null;
@@ -101,10 +116,19 @@ internal class MassSelect
 
     private static void Canvas_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.KeyCode == Keys.Enter)
+        if (e.KeyCode == Keys.Tab)
+        {
+            //Shift selectedparams list by 1 to the left
+            var firstParam = selectedParams[0];
+            selectedParams.RemoveAt(0);
+            selectedParams.Add(firstParam);
+            UpdateForm();
+        }
+        else if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape)
         {
             KillProcess();
         }
+        
     }
 
     private static void KillProcess()
