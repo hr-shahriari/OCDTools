@@ -19,7 +19,7 @@ internal class MassSelect
     private static List<Guid> guids = new List<Guid>();
     private static Form _form;
     private static Label _label;
-
+    private static int paramsAddedCount;
 
     public static void SelectParams()
     {
@@ -64,6 +64,7 @@ internal class MassSelect
                 {
                     selectedParams.Add(docObject);
                     guids.Add(docObject.InstanceGuid);
+                    paramsAddedCount += 1;
                 }
 
             }
@@ -74,6 +75,36 @@ internal class MassSelect
             UpdateForm();
         }
         UpdateForm();
+        mousePosition = Instances.ActiveCanvas.CursorCanvasPosition;
+        var inputGrip = GrasshopperDocument.FindAttributeByGrip(mousePosition, false, true, false);
+        IGH_Param inputParam = null;
+        if (inputGrip != null)
+        {
+            var inParams = (IGH_Param)inputGrip.DocObject;
+            if (e.Button == MouseButtons.Left && inParams.Attributes.HasInputGrip)
+            {
+                inputParam = inParams;
+            }
+        }
+
+        if (inputParam != null)
+        {
+            if (inputParam.Sources.Count == 0)
+            {
+                if (selectedParams.Count > 0)
+                {
+                    inputParam.AddSource(selectedParams[0]);
+                    selectedParams.RemoveAt(0);
+                    guids.RemoveAt(0);
+                    inputParam = null;
+                }
+            }
+        }
+        if (paramsAddedCount > 0 && selectedParams.Count == 0)
+        {
+            KillProcess();
+        }
+        UpdateForm();
 
     }
 
@@ -81,23 +112,28 @@ internal class MassSelect
     {
         if (e.KeyCode == Keys.Enter)
         {
-            // Stop the selection process
-            selectionActive = false;
-            // Unregister the event handlers
-            Control canvas = (Control)Grasshopper.Instances.ActiveCanvas;
-            canvas.MouseMove -= Canvas_MouseMove;
-            canvas.KeyDown -= Canvas_KeyDown;
-            selectionActive = true;
-            selectedParams.Clear();
-            guids.Clear();
+            KillProcess();
+        }
+    }
 
-            // Hide the form when selection is done
-            if (_form != null)
-            {
-                _form.Hide();
-                _form.Dispose();
-                _form = null;
-            }
+    private static void KillProcess()
+    {
+        // Stop the selection process
+        selectionActive = false;
+        // Unregister the event handlers
+        Control canvas = (Control)Grasshopper.Instances.ActiveCanvas;
+        canvas.MouseMove -= Canvas_MouseMove;
+        canvas.KeyDown -= Canvas_KeyDown;
+        selectionActive = true;
+        selectedParams.Clear();
+        guids.Clear();
+
+        // Hide the form when selection is done
+        if (_form != null)
+        {
+            _form.Hide();
+            _form.Dispose();
+            _form = null;
         }
     }
 
