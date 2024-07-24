@@ -3,12 +3,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using Grasshopper;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Attributes;
-using Grasshopper.GUI.Canvas;
-using System.Runtime.CompilerServices;
 using System;
-using Rhino.Geometry;
-using Grasshopper.GUI.SettingsControls;
 using System.Linq;
 using Point = System.Drawing.Point;
 
@@ -38,68 +33,64 @@ internal class MassSelect
         GH_Document GrasshopperDocument = Instances.ActiveCanvas.Document;
         Control canvas = (Control)Grasshopper.Instances.ActiveCanvas;
 
-        // Find the mouse cursor position
-        var mousePosition = Instances.ActiveCanvas.CursorCanvasPosition;
-        var findAttr = GrasshopperDocument.FindAttribute(mousePosition, false);
-        var findGrip = GrasshopperDocument.FindAttributeByGrip(mousePosition, false, false, true);
-        IGH_Attributes selectedParam = null;
-        if (findAttr != null)
-        {
-            selectedParam = findAttr;
-        }
-        else if (findGrip != null)
-        {
-            selectedParam = findGrip;
-        }
-
         var cursorPosition = Control.MousePosition;
         DisplayForm(cursorPosition);
-        try
+
+
+        if (selectionActive && e.Button == MouseButtons.Left)
         {
-            var docObject = (IGH_Param)selectedParam.DocObject;
-            bool hasGrip = docObject.Attributes.HasOutputGrip;
-            if (selectionActive && e.Button == MouseButtons.Left && hasGrip)
+            // Find the mouse cursor position
+            var mousePosition = Instances.ActiveCanvas.CursorCanvasPosition;
+            var findAttr = GrasshopperDocument.FindAttribute(mousePosition, false);
+            var findGrip = GrasshopperDocument.FindAttributeByGrip(mousePosition, false, false, true);
+            IGH_Attributes selectedParam = null;
+            if (findAttr != null)
             {
-                if (!guids.Contains(docObject.InstanceGuid))
-                {
-                    selectedParams.Add(docObject);
-                    guids.Add(docObject.InstanceGuid);
-                    paramsAddedCount += 1;
-                }
-
+                selectedParam = findAttr;
             }
+            else if (findGrip != null)
+            {
+                selectedParam = findGrip;
+            }
+            if (selectedParam != null)
+            {
+                var docObject = (IGH_Param)selectedParam.DocObject;
+                bool hasGrip = docObject.Attributes.HasOutputGrip;
+                if (hasGrip)
+                {
+                    if (!guids.Contains(docObject.InstanceGuid))
+                    {
+                        selectedParams.Add(docObject);
+                        guids.Add(docObject.InstanceGuid);
+                        paramsAddedCount += 1;
+                    }
+                }
+            }
+        }
 
-        }
-        catch
-        {
-            UpdateForm();
-        }
         UpdateForm();
-        mousePosition = Instances.ActiveCanvas.CursorCanvasPosition;
-        var inputGrip = GrasshopperDocument.FindAttributeByGrip(mousePosition, false, true, false);
-        IGH_Param inputParam = null;
-        if (inputGrip != null)
-        {
-            var inParams = (IGH_Param)inputGrip.DocObject;
-            if (e.Button == MouseButtons.Left && inParams.Attributes.HasInputGrip)
-            {
-                inputParam = inParams;
-            }
-        }
 
-        if (inputParam != null)
+        if (e.Button == MouseButtons.Left)
         {
-            if (inputParam.Sources.Count == 0)
+            var mousePosition = Instances.ActiveCanvas.CursorCanvasPosition;
+            var inputParam = (IGH_Param)GrasshopperDocument.FindAttributeByGrip(mousePosition, false, true, false).DocObject;
+            if (inputParam != null)
             {
-                if (selectedParams.Count > 0)
+                if (inputParam.Sources.Count == 0)
                 {
-                    inputParam.AddSource(selectedParams[0]);
-                    selectedParams.RemoveAt(0);
-                    guids.RemoveAt(0);
-                    inputParam = null;
+                    if (selectedParams.Count > 0)
+                    {
+                        inputParam.AddSource(selectedParams[0]);
+                        selectedParams.RemoveAt(0);
+                        guids.RemoveAt(0);
+                        inputParam = null;
+                    }
                 }
             }
         }
+
+
+
         if (paramsAddedCount > 0 && selectedParams.Count == 0)
         {
             KillProcess();
