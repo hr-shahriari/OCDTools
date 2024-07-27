@@ -82,6 +82,7 @@ namespace OCD_Tools
         ToolStripMenuItem makeParamNodesTextDisplay;
         ToolStripMenuItem updateIgnoreXml;
         ToolStripMenuItem ReplaceRelay;
+        ToolStripMenuItem CumulativeOutputSelector;
 
         private List<ToolStripMenuItem> OCDMenuItems
         {
@@ -99,7 +100,8 @@ namespace OCD_Tools
                 updateNameFromRecipent = new ToolStripMenuItem("Update Name From Recipent");
                 makeParamNodesTextDisplay = new ToolStripMenuItem("Param IconToText");
                 updateIgnoreXml = new ToolStripMenuItem("Reload PramIgnore");
-                ReplaceRelay = new ToolStripMenuItem("Replace Relay");
+                ReplaceRelay = new ToolStripMenuItem("Replace Relay to Param");
+                CumulativeOutputSelector = new ToolStripMenuItem("Cumulative Output Selector");
                 // Assign event handlers for the menu items 
                 duplicateGroup.Click += new EventHandler(this.DuplicateGroup_Click);
                 duplicateComponent.Click += new EventHandler(this.DuplicateComponent_Click);
@@ -112,6 +114,7 @@ namespace OCD_Tools
                 makeParamNodesTextDisplay.Click += new EventHandler(this.MakeParamNodesTextDisplay_Click);
                 updateIgnoreXml.Click += new EventHandler(this.UpdateIgnoreXml_Click);
                 ReplaceRelay.Click += new EventHandler(this.ReplaceRelay_Click);
+                CumulativeOutputSelector.Click += new EventHandler(this.CumulativeOutputSelector_Click);
 
                 duplicateGroup.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.D;
                 duplicateComponent.ShortcutKeys = Keys.Alt | Keys.D;
@@ -121,11 +124,13 @@ namespace OCD_Tools
                 internalizePanel.ShortcutKeys = Keys.Alt | Keys.Q;
                 updateNameFromSource.ShortcutKeys = Keys.Alt | Keys.S;
                 updateNameFromRecipent.ShortcutKeys = Keys.Alt | Keys.R;
+                CumulativeOutputSelector.ShortcutKeys = Keys.Alt | Keys.C;
                 list.Add(duplicateGroup);
                 list.Add(duplicateComponent);
                 list.Add(mergedInputs);
                 list.Add(autoConnect);
                 list.Add(appendTOEnd);
+                list.Add(CumulativeOutputSelector);
                 list.Add(internalizePanel);
                 list.Add(updateNameFromSource);
                 list.Add(updateNameFromRecipent);
@@ -158,6 +163,7 @@ namespace OCD_Tools
             e.AppendItem(this.updateNameFromSource);
             e.AppendItem(this.updateNameFromRecipent);
             e.AppendItem(this.makeParamNodesTextDisplay);
+            e.AppendItem(this.CumulativeOutputSelector);
 
         }
 
@@ -220,7 +226,8 @@ namespace OCD_Tools
             GH_Document document = Instances.ActiveCanvas.Document;
             if (document.SelectedObjects().Count == 0)
             {
-                MassSelect.SelectParams();
+                int num = (int)MessageBox.Show("To use this feature, first select components.");
+                
             }
             else
             {
@@ -234,7 +241,7 @@ namespace OCD_Tools
             GH_Document document = Instances.ActiveCanvas.Document;
             if (document.SelectedObjects().Count == 0)
             {
-                int num = (int)MessageBox.Show("To use this feature, first select a component.");
+                int num = (int)MessageBox.Show("To use this feature, first select components.");
             }
             else
             {
@@ -334,6 +341,10 @@ namespace OCD_Tools
             OCD_Tools.ReplaceRelay.ReplaceRelayComponent(document);
         }
 
+        private void CumulativeOutputSelector_Click(object sender, EventArgs e)
+        {
+            MassSelect.SelectParams();
+        }
 
         public GH_DocumentEditor.AggregateShortcutMenuItemsEventHandler handleThis { get; set; }
     }
