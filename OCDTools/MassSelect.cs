@@ -17,7 +17,8 @@ internal class MassSelect
     private static Label _label;
     private static int paramsAddedCount;
     private static GH_Document GrasshopperDocument;
-
+    private static bool shiftWasUp = true;
+    private static bool itemAdded = false;
     public static void SelectParams()
     {
         GrasshopperDocument = Instances.ActiveCanvas.Document;
@@ -32,12 +33,12 @@ internal class MassSelect
 
     private static void Canvas_MouseMove(object sender, MouseEventArgs e)
     {
-        Control canvas = (Control)Grasshopper.Instances.ActiveCanvas;
+        //Control canvas = (Control)Grasshopper.Instances.ActiveCanvas;
 
         var cursorPosition = Control.MousePosition;
         DisplayForm(cursorPosition);
 
-
+        bool isShiftKeyDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
         if (selectionActive && e.Button == MouseButtons.Left)
         {
             // Find the mouse cursor position
@@ -55,20 +56,32 @@ internal class MassSelect
             }
             if (selectedParam != null)
             {
+
                 var docObject = (IGH_Param)selectedParam.DocObject;
                 bool hasGrip = docObject.Attributes.HasOutputGrip;
                 if (hasGrip)
                 {
-                    if (!guids.Contains(docObject.InstanceGuid))
+                    if ((!guids.Contains(docObject.InstanceGuid)) || (isShiftKeyDown && shiftWasUp))
                     {
                         selectedParams.Add(docObject);
                         guids.Add(docObject.InstanceGuid);
-                        paramsAddedCount += 1;
+                        paramsAddedCount++;
+                        if (isShiftKeyDown) itemAdded = true;
                     }
                 }
-            }
-        }
 
+            }
+
+        }
+        if (!isShiftKeyDown)
+        {
+            shiftWasUp = true;
+            itemAdded = false;
+        }
+        else if(isShiftKeyDown && itemAdded)
+        {
+            shiftWasUp = false;
+        }
         UpdateForm();
         //Record the event
         var undoRecord = new GH_UndoRecord("UndoWires");
@@ -119,11 +132,11 @@ internal class MassSelect
             selectedParams.Add(firstParam);
             UpdateForm();
         }
-        else if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape)
+        if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape)
         {
             KillProcess();
         }
-        
+                
     }
 
     private static void KillProcess()
