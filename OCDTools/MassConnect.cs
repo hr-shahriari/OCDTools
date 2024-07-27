@@ -150,50 +150,5 @@ namespace OCD_Tools
 
         }
 
-        //internal static void selectParams()
-        //{
-
-        //    GH_Document GrasshopperDocument = Instances.ActiveCanvas.Document;
-        //    //make a list that every time the user selects a param it will be added to the list
-        //    List<IGH_DocumentObject> selectedParams = new List<IGH_DocumentObject>();
-        //    //select the param
-        //    //GrasshopperDocument.FindAttributeByGrip();
-        //    //While we haven't selected enter allow adding selection to the list
-
-        //    ((Control)Grasshopper.Instances.ActiveCanvas).MouseMove += (sender, e) =>
-        //    {
-        //        //if the user selects a param add it to the list
-        //        if (e.Button == MouseButtons.Left)
-        //        {
-        //            selectedParams.AddRange(GrasshopperDocument.SelectedObjects());
-        //        }
-        //    };
-
-        //}
-
-        //internal static void SelectParams()
-        //{
-        //    GH_Document GrasshopperDocument = Instances.ActiveCanvas.Document;
-        //    List<IGH_DocumentObject> selectedParams = new List<IGH_DocumentObject>();
-
-        //    // Register the MouseMove event handler
-        //    ((Control)Grasshopper.Instances.ActiveCanvas).MouseMove += async (sender, e) =>
-        //    {
-        //        // If the user selects a param, add it to the list
-        //        if (e.Button == MouseButtons.Left)
-        //        {
-        //            selectedParams.AddRange(GrasshopperDocument.SelectedObjects());
-        //        }
-
-        //        // Check if the Enter key has been pressed
-        //        if (Control.ModifierKeys == Keys.Enter)
-        //        {
-        //            // Stop listening to MouseMove events
-        //            ((Control)Grasshopper.Instances.ActiveCanvas).MouseMove -= null;
-        //        }
-
-        //        await Task.Delay(10); // Small delay to prevent freezing
-        //    };
-        //}
     }
 }

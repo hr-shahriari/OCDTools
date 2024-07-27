@@ -6,11 +6,8 @@ using Grasshopper.Kernel;
 using System;
 using System.Linq;
 using Point = System.Drawing.Point;
-using OCD_Tools;
 using Grasshopper.Kernel.Undo.Actions;
 using Grasshopper.Kernel.Undo;
-using Rhino.UI;
-
 internal class MassSelect
 {
     private static bool selectionActive = true;
@@ -19,10 +16,11 @@ internal class MassSelect
     private static Form _form;
     private static Label _label;
     private static int paramsAddedCount;
+    private static GH_Document GrasshopperDocument;
 
     public static void SelectParams()
     {
-        GH_Document GrasshopperDocument = Instances.ActiveCanvas.Document;
+        GrasshopperDocument = Instances.ActiveCanvas.Document;
         Control canvas = (Control)Grasshopper.Instances.ActiveCanvas;
 
         // Register the MouseMove event handler
@@ -34,7 +32,6 @@ internal class MassSelect
 
     private static void Canvas_MouseMove(object sender, MouseEventArgs e)
     {
-        GH_Document GrasshopperDocument = Instances.ActiveCanvas.Document;
         Control canvas = (Control)Grasshopper.Instances.ActiveCanvas;
 
         var cursorPosition = Control.MousePosition;
@@ -90,8 +87,6 @@ internal class MassSelect
                     {
                         GH_WireAction ghWireAction = new GH_WireAction(selectedParams[0]);
                         GH_WireAction inputParamAction = new GH_WireAction(inputParam);
-                        //GrasshopperDocument.UndoUtil.RecordWireEvent("Wire", selectedParams[0]);
-                        //GrasshopperDocument.UndoUtil.RecordWireEvent("WireInput", inputParam);
                         undoRecord.AddAction(ghWireAction);
                         undoRecord.AddAction(inputParamAction);
                         inputParam.AddSource(selectedParams[0]);
@@ -164,11 +159,15 @@ internal class MassSelect
                 _form.Width = 200; // Adjust width if needed
                 _form.FormBorderStyle = FormBorderStyle.None;
                 _form.ShowInTaskbar = false;
-
                 _label = new Label();
                 _label.AutoSize = true;
-                _label.Font = new Font("Arial", 10);
+                _label.Font = new Font("Segoe UI", 10);
                 _label.Location = new Point(10, 10);
+                _label.BorderStyle = BorderStyle.Fixed3D;
+                _label.RightToLeft = RightToLeft.Yes;
+                _label.BackColor = Color.Gray;
+                _label.Margin= new Padding(5);
+                _label.UseMnemonic= true;
                 _form.Controls.Add(_label);
 
                 _form.Show((IWin32Window)Instances.DocumentEditor);
@@ -201,7 +200,7 @@ internal class MassSelect
                 _form.Height = (int)stringSize.Height + 30; // Add padding
             }
 
-            _form.Invalidate();
+            //_form.Invalidate();
             _form.Update();
         }
     }
@@ -215,30 +214,6 @@ internal class MassSelect
             this.TransparencyKey = this.BackColor;
             this.FormBorderStyle = FormBorderStyle.None;
             this.TopMost = true;
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            using (Graphics g = e.Graphics)
-            {
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                using (Pen pen = new Pen(Color.FromArgb(76, 173, 216, 230), 2))
-                {
-                    // Draw the rounded rectangle
-                    int radius = 10; // Corner radius
-                    int margin = 4; // Margin around the label
-                    System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath();
-                    Rectangle rect = new Rectangle(margin, margin, this.Width - 2 * margin, this.Height - 2 * margin);
-                    path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
-                    path.AddArc(rect.X + rect.Width - radius, rect.Y, radius, radius, 270, 90);
-                    path.AddArc(rect.X + rect.Width - radius, rect.Y + rect.Height - radius, radius, radius, 0, 90);
-                    path.AddArc(rect.X, rect.Y + rect.Height - radius, radius, radius, 90, 90);
-                    path.CloseAllFigures();
-
-                    g.DrawPath(pen, path);
-                }
-            }
         }
 
     }

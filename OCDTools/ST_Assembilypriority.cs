@@ -81,6 +81,7 @@ namespace OCD_Tools
         ToolStripMenuItem updateNameFromRecipent;
         ToolStripMenuItem makeParamNodesTextDisplay;
         ToolStripMenuItem updateIgnoreXml;
+        ToolStripMenuItem ReplaceRelay;
 
         private List<ToolStripMenuItem> OCDMenuItems
         {
@@ -98,6 +99,7 @@ namespace OCD_Tools
                 updateNameFromRecipent = new ToolStripMenuItem("Update Name From Recipent");
                 makeParamNodesTextDisplay = new ToolStripMenuItem("Param IconToText");
                 updateIgnoreXml = new ToolStripMenuItem("Reload PramIgnore");
+                ReplaceRelay = new ToolStripMenuItem("Replace Relay");
                 // Assign event handlers for the menu items 
                 duplicateGroup.Click += new EventHandler(this.DuplicateGroup_Click);
                 duplicateComponent.Click += new EventHandler(this.DuplicateComponent_Click);
@@ -109,6 +111,7 @@ namespace OCD_Tools
                 updateNameFromRecipent.Click += new EventHandler(this.UpdateNameFromRecipent_Click);
                 makeParamNodesTextDisplay.Click += new EventHandler(this.MakeParamNodesTextDisplay_Click);
                 updateIgnoreXml.Click += new EventHandler(this.UpdateIgnoreXml_Click);
+                ReplaceRelay.Click += new EventHandler(this.ReplaceRelay_Click);
 
                 duplicateGroup.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.D;
                 duplicateComponent.ShortcutKeys = Keys.Alt | Keys.D;
@@ -128,6 +131,7 @@ namespace OCD_Tools
                 list.Add(updateNameFromRecipent);
                 list.Add(makeParamNodesTextDisplay);
                 list.Add(updateIgnoreXml);
+                list.Add(ReplaceRelay);
                 return list;
             }
         }
@@ -263,7 +267,10 @@ namespace OCD_Tools
             }
             else
             {
-                List<IGH_DocumentObject> list = document.SelectedObjects().Cast<IGH_DocumentObject>().ToList();
+                List<IGH_DocumentObject> list = 
+                    document.SelectedObjects()
+                    .Cast<IGH_DocumentObject>()
+                    .ToList();
                 ChangeName.ChangeNameOfObjectFromSources(document,list);
                 document.ScheduleSolution(4);
             }
@@ -319,6 +326,12 @@ namespace OCD_Tools
                 //do nothing
             }
 
+        }
+
+        private void ReplaceRelay_Click(object sender, EventArgs e)
+        {
+            GH_Document document = Instances.ActiveCanvas.Document;
+            OCD_Tools.ReplaceRelay.ReplaceRelayComponent(document);
         }
 
 
