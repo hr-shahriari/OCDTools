@@ -14,7 +14,7 @@ namespace OCD_Tools.Components
         /// Initializes a new instance of the GH_IgnoreParam class.
         /// </summary>
         public GH_IgnoreParam()
-          : base("GH_IgnoreParam", "IgnoreParam",
+          : base("IgnoreParam", "IgnoreParam",
               "Ignore Output Params for the selected components",
               "Params", "Util")
         {
@@ -37,7 +37,7 @@ namespace OCD_Tools.Components
         //This region overrides the typical component layout
         public override void CreateAttributes()
         {
-            m_attributes = new CustomUI.ButtonUIAttributes(this, "UpdateIgnoreXml", FunctionToRunOnClick, "Opt description");
+            m_attributes = new CustomUI.ButtonUIAttributes(this, "UpdateIgnoreXml", FunctionToRunOnClick, "Update");
         }
 
         public void FunctionToRunOnClick()
