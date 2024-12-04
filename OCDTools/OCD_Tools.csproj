@@ -6,6 +6,8 @@
     <Title>MyGrasshopperAssembly1</Title>
     <Description>Description of MyGrasshopperAssembly1</Description>
     <TargetExt>.gha</TargetExt>
+    <Platforms>AnyCPU;x64</Platforms>
+    <Configurations>Debug;Release;ReleaseConfig</Configurations>
   </PropertyGroup>
   
   <ItemGroup>

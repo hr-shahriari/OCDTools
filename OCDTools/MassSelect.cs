@@ -8,6 +8,8 @@ using System.Linq;
 using Point = System.Drawing.Point;
 using Grasshopper.Kernel.Undo.Actions;
 using Grasshopper.Kernel.Undo;
+using Grasshopper.Kernel.Parameters;
+
 internal class MassSelect
 {
     private static bool selectionActive = true;
@@ -44,6 +46,7 @@ internal class MassSelect
             // Find the mouse cursor position
             var mousePosition = Instances.ActiveCanvas.CursorCanvasPosition;
             var findAttr = GrasshopperDocument.FindAttribute(mousePosition, false);
+            
             var findGrip = GrasshopperDocument.FindAttributeByGrip(mousePosition, false, false, true);
             IGH_Attributes selectedParam = null;
             if (findAttr != null)
@@ -136,6 +139,10 @@ internal class MassSelect
         {
             KillProcess();
         }
+        if (e.KeyCode == Keys.End)
+        {
+            AddParam();
+        }
                 
     }
 
@@ -216,6 +223,32 @@ internal class MassSelect
             //_form.Invalidate();
             _form.Update();
         }
+    }
+
+    private static void AddParam()
+    {
+        var position = Instances.ActiveCanvas.CursorCanvasPosition;
+        GH_DocumentIO ghDocIO= new GH_DocumentIO();
+        ghDocIO.Document = new GH_Document();
+        foreach (var param in selectedParams)
+        {
+            Param_GenericObject genericParam = new Param_GenericObject();
+            genericParam.Name = param.Name;
+            genericParam.NickName = param.NickName;
+            ghDocIO.Document.AddObject(genericParam, false);
+            genericParam.Attributes.Pivot = position;
+            genericParam.IconDisplayMode = GH_IconDisplayMode.name;
+            genericParam.AddSource(param);
+            position.Y += 20;
+
+
+        }
+        ghDocIO.Document.ExpireSolution();
+        ghDocIO.Document.MutateAllIds();
+        var objects = ghDocIO.Document.Objects;
+        GrasshopperDocument.MergeDocument(ghDocIO.Document);
+        KillProcess();
+        
     }
 
     private class TransparentForm : Form

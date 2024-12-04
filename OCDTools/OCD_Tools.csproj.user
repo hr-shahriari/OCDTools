@@ -3,7 +3,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
+  </PropertyGroup>
   <PropertyGroup>
-    <ActiveDebugProfile>RH8</ActiveDebugProfile>
+    <ActiveDebugProfile>Rhino 8 - .net 4.8</ActiveDebugProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseConfig|x64'">
+    <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

@@ -34,11 +34,14 @@ namespace OCD_Tools
                 List<IGH_Param> outputParams = ighComponent.Params.Output.ToList();
                 //Check if the component is in the ignoreParamDictionary and if it is chcek the names in outputParams and remove them from the list
                 List<string> ignoreParams = new List<string>();
-                if (ignoreParamDictionary.TryGetValue(ighComponent.Name, out ignoreParams))
+                if (ignoreParamDictionary != null)
                 {
-                    foreach (string ignoreParam in ignoreParams)
+                    if (ignoreParamDictionary.TryGetValue(ighComponent.Name, out ignoreParams))
                     {
-                        outputParams.RemoveAll(x => x.Name == ignoreParam);
+                        foreach (string ignoreParam in ignoreParams)
+                        {
+                            outputParams.RemoveAll(x => x.Name == ignoreParam);
+                        }
                     }
                 }
                 paramList.AddRange((IEnumerable<IGH_Param>)outputParams);

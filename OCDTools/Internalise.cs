@@ -20,23 +20,21 @@ namespace OCD_Tools
         private static string StreamDataToPanel(GH_Panel panel)
         {
             string flattenedString = "";
-            foreach (var path in panel.VolatileData.Paths)
+
+            var data = (GH_Structure<GH_String>)panel.VolatileData;
+            var newdata = data.Duplicate();
+            newdata.FlattenData();
+            int i = 0;
+            foreach (var item in newdata)
             {
-                var data = (GH_Structure<GH_String>)panel.VolatileData;
-                foreach (var branch in data.Branches)
+                i++;
+                var str_item = item.ToString();
+                flattenedString += str_item;
+                if (i < newdata.DataCount)
                 {
-                    int i = 0;
-                    foreach (var item in branch)
-                    {
-                        i++;
-                        var str_item = item.ToString();
-                        flattenedString += str_item;
-                        if (i < branch.Count)
-                        {
-                            flattenedString += System.Environment.NewLine;
-                        }
-                    }
+                    flattenedString += System.Environment.NewLine;
                 }
+                
             }
             return flattenedString;
         }
