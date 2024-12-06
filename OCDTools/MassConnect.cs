@@ -3,9 +3,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Undo.Actions;
 using System.Collections.Generic;
 using System.Linq;
-using System.Management.Instrumentation;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+
 
 namespace OCD_Tools
 {
