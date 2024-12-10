@@ -227,6 +227,7 @@ internal class MassSelect
 
     private static void AddParam()
     {
+        GrasshopperDocument.UndoUtil.RecordEvent("addParam event");
         var position = Instances.ActiveCanvas.CursorCanvasPosition;
         GH_DocumentIO ghDocIO= new GH_DocumentIO();
         ghDocIO.Document = new GH_Document();
@@ -246,7 +247,14 @@ internal class MassSelect
         ghDocIO.Document.ExpireSolution();
         ghDocIO.Document.MutateAllIds();
         var objects = ghDocIO.Document.Objects;
+        GrasshopperDocument.UndoUtil.RecordAddObjectEvent("addParam event", objects);
+        
         GrasshopperDocument.MergeDocument(ghDocIO.Document);
+        Instances.InvalidateCanvas();
+        Instances.RedrawCanvas();
+        
+
+
         KillProcess();
         
     }
