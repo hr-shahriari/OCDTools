@@ -83,6 +83,8 @@ namespace OCD_Tools
         ToolStripMenuItem updateIgnoreXml;
         ToolStripMenuItem ReplaceRelay;
         ToolStripMenuItem CumulativeOutputSelector;
+        ToolStripMenuItem addToGroup;
+        ToolStripMenuItem bestify;
 
         private List<ToolStripMenuItem> OCDMenuItems
         {
@@ -102,6 +104,8 @@ namespace OCD_Tools
                 updateIgnoreXml = new ToolStripMenuItem("Reload PramIgnore");
                 ReplaceRelay = new ToolStripMenuItem("Replace Relay to Param");
                 CumulativeOutputSelector = new ToolStripMenuItem("Cumulative Output Selector");
+                addToGroup = new ToolStripMenuItem("Add To Groups");
+                bestify = new ToolStripMenuItem("Bestify");
                 // Assign event handlers for the menu items 
                 duplicateGroup.Click += new EventHandler(this.DuplicateGroup_Click);
                 duplicateComponent.Click += new EventHandler(this.DuplicateComponent_Click);
@@ -115,6 +119,8 @@ namespace OCD_Tools
                 updateIgnoreXml.Click += new EventHandler(this.UpdateIgnoreXml_Click);
                 ReplaceRelay.Click += new EventHandler(this.ReplaceRelay_Click);
                 CumulativeOutputSelector.Click += new EventHandler(this.CumulativeOutputSelector_Click);
+                addToGroup.Click += new EventHandler(this.AddToGroup_Click);
+                bestify.Click += new EventHandler(this.Bestify_Click);
 
                 duplicateGroup.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.D;
                 duplicateComponent.ShortcutKeys = Keys.Alt | Keys.D;
@@ -125,6 +131,9 @@ namespace OCD_Tools
                 updateNameFromSource.ShortcutKeys = Keys.Alt | Keys.S;
                 updateNameFromRecipent.ShortcutKeys = Keys.Alt | Keys.R;
                 CumulativeOutputSelector.ShortcutKeys = Keys.Alt | Keys.C;
+                ReplaceRelay.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.R;
+                addToGroup.ShortcutKeys = Keys.Alt | Keys.G;
+                bestify.ShortcutKeys = Keys.Alt | Keys.B;
                 list.Add(duplicateGroup);
                 list.Add(duplicateComponent);
                 list.Add(mergedInputs);
@@ -137,6 +146,8 @@ namespace OCD_Tools
                 list.Add(makeParamNodesTextDisplay);
                 list.Add(updateIgnoreXml);
                 list.Add(ReplaceRelay);
+                list.Add(addToGroup);
+                list.Add(bestify);
                 return list;
             }
         }
@@ -346,6 +357,27 @@ namespace OCD_Tools
             MassSelect.SelectParams();
         }
 
+        public void AddToGroup_Click(object sender, EventArgs e)
+        {
+            GH_Document document = Instances.ActiveCanvas.Document;
+            AddToGroup.AddToGroupMethod(document);
+        }
+        public void Bestify_Click(object sender, EventArgs e)
+        {
+            GH_Document document = Instances.ActiveCanvas.Document;
+            if (document.SelectedObjects().Count == 0)
+            {
+                int num = (int)MessageBox.Show("To use this feature, first select a group containing components.");
+            }
+            else
+            {
+                List<GH_Group> list = document.SelectedObjects()
+                    .OfType<GH_Group>()
+                    .ToList();
+                Bestify.Bestifying(document, list);
+                document.ScheduleSolution(4);
+            }
+        }
         public GH_DocumentEditor.AggregateShortcutMenuItemsEventHandler handleThis { get; set; }
     }
 }

@@ -42,11 +42,18 @@ namespace OCD_Tools
                     document.RemoveObject(relay, false);
                     document.UndoUtil.RecordAddObjectEvent(nameof(ReplaceRelay), param);
                     param.Attributes.ExpireLayout();
+                    param.ExpirePreview(true);
+                    param.Locked = relay.Locked;
+                    document.ExpirePreview(true);
+                    
                 }
             }
 
-            document.ExpirePreview(true);          
+            document.ExpirePreview(true);
+          
+            
 
         }
+        
     }
 }
