@@ -85,6 +85,7 @@ namespace OCD_Tools
         ToolStripMenuItem CumulativeOutputSelector;
         ToolStripMenuItem addToGroup;
         ToolStripMenuItem bestify;
+        ToolStripMenuItem gep1;
 
         private List<ToolStripMenuItem> OCDMenuItems
         {
@@ -106,6 +107,7 @@ namespace OCD_Tools
                 CumulativeOutputSelector = new ToolStripMenuItem("Cumulative Output Selector");
                 addToGroup = new ToolStripMenuItem("Add To Groups");
                 bestify = new ToolStripMenuItem("Bestify");
+                gep1 = new ToolStripMenuItem("GEP1");
                 // Assign event handlers for the menu items 
                 duplicateGroup.Click += new EventHandler(this.DuplicateGroup_Click);
                 duplicateComponent.Click += new EventHandler(this.DuplicateComponent_Click);
@@ -121,6 +123,7 @@ namespace OCD_Tools
                 CumulativeOutputSelector.Click += new EventHandler(this.CumulativeOutputSelector_Click);
                 addToGroup.Click += new EventHandler(this.AddToGroup_Click);
                 bestify.Click += new EventHandler(this.Bestify_Click);
+                gep1.Click += new EventHandler(this.GEP1_Click);
 
                 duplicateGroup.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.D;
                 duplicateComponent.ShortcutKeys = Keys.Alt | Keys.D;
@@ -148,6 +151,7 @@ namespace OCD_Tools
                 list.Add(ReplaceRelay);
                 list.Add(addToGroup);
                 list.Add(bestify);
+                list.Add(gep1);
                 return list;
             }
         }
@@ -377,6 +381,13 @@ namespace OCD_Tools
                 Bestify.Bestifying(document, list);
                 document.ScheduleSolution(4);
             }
+        }
+
+        public void GEP1_Click(object sender, EventArgs e)
+        {
+            GH_Document document = Instances.ActiveCanvas.Document;
+            GEP1.Auto_GEP(document);
+            
         }
         public GH_DocumentEditor.AggregateShortcutMenuItemsEventHandler handleThis { get; set; }
     }

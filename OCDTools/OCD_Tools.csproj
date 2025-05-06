@@ -27,6 +27,8 @@
     <PackageReference Include="Grasshopper" Version="6.35.21222.17001" Condition="$(TargetFramework) == 'net48'" ExcludeAssets="runtime" />
     <PackageReference Include="Grasshopper" Version="7.0.20314.3001" Condition="$(TargetFramework) == 'net48'" ExcludeAssets="runtime" />
     <PackageReference Include="Grasshopper" Version="8.0.23304.9001" Condition="!$(TargetFramework.StartsWith('net4'))" ExcludeAssets="runtime" />
+    <PackageReference Include="QuickGraph" Version="3.6.61119.7" />
+    <PackageReference Include="QuikGraph" Version="2.5.0" />
   </ItemGroup>
   
   <!-- For Windows only builds -->
@@ -43,6 +45,20 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" ExcludeAssets="all" GeneratePathProperty="true" />
     <Reference Include="$(PkgMicrosoft_NETFramework_ReferenceAssemblies_net48)\build\.NETFramework\v4.8\System.Windows.Forms.dll" Private="False" />
     <PackageReference Include="System.Drawing.Common" Version="7.0.0" ExcludeAssets="runtime" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Combinatorics">
+      <HintPath>..\..\mncd\src\MNCD\bin\Release\net48\Combinatorics.dll</HintPath>
+    </Reference>
+    <Reference Include="Comuna">
+      <HintPath>..\..\Comuna\src\Comuna\bin\Release\netstandard1.3\Comuna.dll</HintPath>
+    </Reference>
+    <Reference Include="LouvainCommunityPL">
+      <HintPath>..\..\LouvainSharp\LouvainCommunityPL\bin\Release\LouvainCommunityPL.dll</HintPath>
+    </Reference>
+    <Reference Include="MNCD">
+      <HintPath>..\..\mncd\src\MNCD\bin\Release\net48\MNCD.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resource1.Designer.cs">
