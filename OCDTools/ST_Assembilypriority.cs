@@ -387,7 +387,9 @@ namespace OCD_Tools
         {
             GH_Document document = Instances.ActiveCanvas.Document;
             GEP1.Auto_GEP(document);
-            
+            //GEP1.ExecuteFullAutoGroupAndArrange(document);
+
+
         }
         public GH_DocumentEditor.AggregateShortcutMenuItemsEventHandler handleThis { get; set; }
     }
