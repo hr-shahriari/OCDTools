@@ -221,6 +221,8 @@ namespace OCD_Tools
                 }
                 
             }
+
+            UpdateFrozenGroupPosition(doc, frozenGroupIds);
             UpdateGroupsLocation(doc);
         }
 
@@ -228,6 +230,8 @@ namespace OCD_Tools
         {
             var verts = doc.Objects.OfType<GH_Group>().ToList();
             if (verts.Count == 0) return;
+            var dupGroups = verts.SelectMany(i => i.ObjectsRecursive()).OfType<GH_Group>().Select(i => i.InstanceGuid).ToList();
+            //verts = verts.Where(i => !dupGroups.Contains(i.InstanceGuid)).ToList();
 
             var g = new BidirectionalGraph<GH_Group, Edge<GH_Group>>(true);
             g.AddVertexRange(verts);
@@ -240,11 +244,20 @@ namespace OCD_Tools
 
             var objToGrousp = verts
          .SelectMany(grp => grp.Objects()).ToList();
-
+            var midcheck = verts
+                .SelectMany(grp => grp.ObjectsRecursive().Select(o => (obj: o.InstanceGuid, group: grp))).ToList();
+            var dupes = verts
+    .SelectMany(grp => grp.Objects()
+                      .Select(o => o.InstanceGuid))
+    .GroupBy(id => id)
+    .Where(grp => grp.Count() > 1)
+    .Select(grp => grp.Key)
+    .ToList();
+            var allObjects = verts.SelectMany(grp => grp.ObjectsRecursive().Select(o => (obj: o.InstanceGuid, group: grp))).ToList();
      var objToGroup = verts
-                .SelectMany(grp => grp.Objects().Select(o => (obj: o.InstanceGuid, group: grp)))
-                .ToDictionary(t => t.obj, t => t.group);
-
+                .SelectMany(grp => grp.Objects().Select(o => (obj: o.InstanceGuid, group: grp))).GroupBy(id => id.obj)
+                .ToDictionary(t => t.First().obj, t => t.First().group);
+            
             foreach (var grp in verts)
             {
                 var check = grp.ObjectsRecursive()
@@ -288,14 +301,38 @@ namespace OCD_Tools
 
             var alg = new SugiyamaLayoutAlgorithm<GH_Group, Edge<GH_Group>, BidirectionalGraph<GH_Group, Edge<GH_Group>>>(g, vSizes, vPos, lp, e => EdgeTypes.Hierarchical);
             alg.Compute(new System.Threading.CancellationToken());
-
+            
             var positions = alg.VertexPositions;
+            var groupsInPosition = positions.Select(i => i.Key.InstanceGuid);
+            //X and Y position is different in the algorithm, it is sorting it actually by Rhino's Y instead of X dirction, here ((GraphX)) "y" means "X" in rhino
+            float y = 0;
+            float x = 50;
 
-            foreach (var kv in positions)
+            var standingGroups = g.Vertices.Where(i => !groupsInPosition.Contains(i.InstanceGuid)).ToList();
+            foreach (var grp in standingGroups)
+            {
+                var h = grp.Attributes.Bounds.Height;
+                var w = grp.Attributes.Bounds.Width;
+
+                var delta = new PointF(0, x);
+                foreach (var o in grp.Objects())
+                {
+                    o.Attributes.Pivot = new PointF(o.Attributes.Pivot.X + delta.X, o.Attributes.Pivot.Y + delta.Y);
+                    o.Attributes.ExpireLayout();
+                }
+                grp.ExpirePreview(true);
+                x += h + 10;
+            }
+            var sortedPositions = positions.OrderByDescending(i => i.Value.Y).Reverse().ToList();
+
+            foreach (var kv in sortedPositions)
             {
                 var grp = kv.Key;
                 var center = kv.Value;
-                var delta = new PointF((float)center.Y - grp.Attributes.Bounds.Width / 2, (float)center.X - grp.Attributes.Bounds.Height / 2);
+                var bounds = grp.Attributes.Bounds;
+                y += (float)center.Y;
+                //x += (float)center.X;
+                var delta = new PointF(y , x);
                 foreach (var o in grp.Objects())
                 {
                     o.Attributes.Pivot = new PointF(o.Attributes.Pivot.X + delta.X, o.Attributes.Pivot.Y + delta.Y);
@@ -306,11 +343,6 @@ namespace OCD_Tools
 
             doc.NewSolution(false);
         }
-
-
-
-
-
 
         internal static void UpdateGroupInLocation(GH_Document doc, GH_Group grp)
         {
@@ -350,6 +382,7 @@ namespace OCD_Tools
                 }
             }
 
+
             foreach (var p in doc.Objects.OfType<GH_Panel>())
             {
                 foreach (var r in p.Recipients)
@@ -385,13 +418,38 @@ namespace OCD_Tools
             alg.Compute(new System.Threading.CancellationToken());
 
             var positions = alg.VertexPositions;
-
-            foreach (var kv in positions)
+            var positionsGuids = positions.Keys.Select(i => i.InstanceGuid);
+            var standAloneInstances = g.Vertices.Where(i => !positionsGuids.Contains(i.InstanceGuid)).ToList();
+          
+            var checkY = 0.0;
+            var prevW = 0.0;
+            var sortedPositions = positions.OrderByDescending(i => i.Value.Y).Reverse().ToList();
+            var preX = 0.0;
+            foreach (var kv in sortedPositions)
             {
                 var obj = kv.Key;
                 var center = kv.Value;
-                SetObjectLocation(obj, new PointF((float)center.Y, (float)center.X));
+                var x = center.Y;
+                var curW = obj.Attributes.Bounds.Width / 2;
+                if (x > (curW + prevW + checkY + 20))
+                {
+                    x = curW + prevW + checkY + 20;
+                    checkY = x;
+                }
+                SetObjectLocation(obj, new PointF((float)x, (float)center.X));
+                if (x <= (curW + prevW + checkY + 20))
+                {
+                    checkY = center.Y;
+                }
+                prevW = obj.Attributes.Bounds.Width/2;
+                preX = center.X;
             }
+            
+            foreach (var obj in standAloneInstances)
+            {
+                SetObjectLocation(obj, new PointF((float)(checkY + prevW + obj.Attributes.Bounds.Width), (float)preX));
+                preX += obj.Attributes.Bounds.Height + 5;
+            }    
             doc.NewSolution(false);
         }
 
@@ -413,6 +471,32 @@ namespace OCD_Tools
             obj.Attributes.ExpireLayout();
             obj.Attributes.PerformLayout();
             return ghPivotAction;
+        }
+
+        private static void UpdateFrozenGroupPosition(GH_Document doc,HashSet<Guid> frozenGroupIds)
+        {
+            var grps = doc.Objects.OfType<GH_Group>().ToList();
+            grps = grps.Where(i => frozenGroupIds.Contains(i.InstanceGuid)).ToList();
+            foreach (var group in grps)
+            {
+                Bestify.Bestifying(doc, new List<GH_Group> { group });
+            }
+            var ids = grps.SelectMany(i => i.Objects()).OfType<GH_Group>().Select(i => i.InstanceGuid).ToList();
+            grps = grps.Where(i => !ids.Contains(i.InstanceGuid)).ToList();
+
+            
+            foreach (var g in grps)
+            {
+                var bounds = g.Attributes.Bounds;
+                g.Attributes.Pivot = new PointF(bounds.Width / 2, bounds.Height / 2);
+                g.ExpirePreview(true);
+                var objs = g.Objects().OfType<IGH_ActiveObject>().ToList();
+                var xs = objs.Select(i => i.Attributes.Pivot.X);
+                var ys = objs.Select(i => i.Attributes.Pivot.Y);
+                var minX = xs.Min();
+                var minY = ys.Min();
+                objs.ForEach(i => SetObjectLocation(i, new PointF(i.Attributes.Pivot.X - minX, i.Attributes.Pivot.Y - minY)));
+            }
         }
     }
 }
