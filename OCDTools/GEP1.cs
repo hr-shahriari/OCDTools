@@ -1,19 +1,25 @@
-﻿using System;
+﻿using GraphX.Logic.Algorithms;
+using GraphX.Logic.Algorithms.LayoutAlgorithms;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Parameters;
+using Grasshopper.Kernel.Special;
+using Grasshopper.Kernel.Undo;
+using Grasshopper.Kernel.Undo.Actions;
+using MNCD.CommunityDetection.SingleLayer;
+using MNCD.Core;
+using QuickGraph;
+using QuickGraph.Algorithms.ConnectedComponents;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using Grasshopper.Kernel;
-using Grasshopper.Kernel.Special;
-using QuickGraph;
-using MNCD.Core;
-using MNCD.CommunityDetection.SingleLayer;
-using Grasshopper.Kernel.Undo;
-using Grasshopper.Kernel.Undo.Actions;
+using System.Windows.Controls.Primitives;
 using Edge = MNCD.Core.Edge;
-using GraphX.Logic.Algorithms.LayoutAlgorithms;
-using GraphX.Logic.Algorithms;
-using QuickGraph.Algorithms.ConnectedComponents;
+using MsaglCurves = Microsoft.Msagl.Core.Geometry.Curves;
+using MsaglGeom = Microsoft.Msagl.Core.Geometry;
+using MsaglLayered = Microsoft.Msagl.Layout.Layered;
+using MsaglLayout = Microsoft.Msagl.Core.Layout;
 
 namespace OCD_Tools
 {
@@ -287,17 +293,19 @@ namespace OCD_Tools
                     v.Attributes.Bounds.X + v.Attributes.Bounds.Width / 2,
                     v.Attributes.Bounds.Y + v.Attributes.Bounds.Height / 2));
 
+            float pad = 20;
             var lp = new SugiyamaLayoutParameters
             {
-                MaxWidth = 100,
-                VerticalGap = 0,
-                HorizontalGap = 50,
+                MaxWidth = 100000,
+                HorizontalGap = pad,
+                VerticalGap = pad,
                 DirtyRound = false,
-                MinimizeHierarchicalEdgeLong = true,
                 Simplify = true,
-                Phase1IterationCount = vPos.Count * 3,
-                Phase2IterationCount = vPos.Count * 3
+                MinimizeHierarchicalEdgeLong = true,
+                Phase1IterationCount = Math.Max(30, vPos.Count * 2),
+                Phase2IterationCount = Math.Max(30, vPos.Count * 2)
             };
+
 
             var alg = new SugiyamaLayoutAlgorithm<GH_Group, Edge<GH_Group>, BidirectionalGraph<GH_Group, Edge<GH_Group>>>(g, vSizes, vPos, lp, e => EdgeTypes.Hierarchical);
             alg.Compute(new System.Threading.CancellationToken());
@@ -344,114 +352,156 @@ namespace OCD_Tools
             doc.NewSolution(false);
         }
 
+
         internal static void UpdateGroupInLocation(GH_Document doc, GH_Group grp)
         {
             var verts = grp.ObjectsRecursive().OfType<IGH_ActiveObject>().ToList();
             if (verts.Count == 0) return;
 
-            var g = new BidirectionalGraph<
-                IGH_ActiveObject,
-                Edge<IGH_ActiveObject>>(true);
+            var graph = new MsaglLayout.GeometryGraph();
+            var nodeDict = new Dictionary<IGH_ActiveObject, MsaglLayout.Node>();
 
-            g.AddVertexRange(verts);
-
-            void AddEdge(IGH_ActiveObject from, IGH_ActiveObject to)
+            foreach (var o in verts)
             {
-                if (verts.Contains(from) && verts.Contains(to))
-                    g.AddEdge(new Edge<IGH_ActiveObject>(from, to));
+                var b = o.Attributes.Bounds;
+                var max = Math.Max(Math.Max(10, b.Height), Math.Max(10, b.Width));
+
+                var sq = MsaglCurves.CurveFactory.CreateRectangle(max, max, new MsaglGeom.Point(0, 0));
+                var n = new MsaglLayout.Node()
+                {
+                    UserData = o,
+                    BoundaryCurve = sq
+                };
+                graph.Nodes.Add(n);
+                nodeDict[o] = n;
             }
 
-            foreach (var c in verts.OfType<IGH_Component>())
+            foreach (var src in verts.OfType<IGH_Component>())
             {
-                foreach (var o in c.Params.Output)
+                foreach (var o in src.Params.Output)
                 {
                     foreach (var r in o.Recipients)
                     {
-                        if (r.Attributes?.Parent?.DocObject is IGH_ActiveObject tgt)
-                            AddEdge(c, tgt);
+                        var t = r.Attributes.GetTopLevel.DocObject;
+                        if (t != null && nodeDict.ContainsKey((IGH_ActiveObject) t))
+                        {
+                            var e = new MsaglLayout.Edge(nodeDict[src], nodeDict[(IGH_ActiveObject)t]);
+                            graph.Edges.Add(e);
+                        }
                     }
                 }
             }
 
-            foreach (var p in doc.Objects.OfType<IGH_Param>())
+            foreach (var src in verts.OfType<IGH_Param>())
             {
-                foreach (var r in p.Recipients)
+
+                foreach (var r in src.Recipients)
                 {
-                    if (r.Attributes?.Parent?.DocObject is IGH_ActiveObject tgt)
-                        AddEdge(p, tgt);
+                    var t = r.Attributes.GetTopLevel.DocObject;
+                    if (t != null && nodeDict.ContainsKey((IGH_ActiveObject)t))
+                    {
+                        var e = new MsaglLayout.Edge(nodeDict[src], nodeDict[(IGH_ActiveObject)t]);
+                        graph.Edges.Add(e);
+                    }
                 }
             }
 
-
-            foreach (var p in doc.Objects.OfType<GH_Panel>())
+            foreach (var src in verts.OfType<GH_Panel>())
             {
-                foreach (var r in p.Recipients)
+                foreach (var r in src.Recipients)
                 {
-                    if (r.Attributes?.Parent?.DocObject is IGH_ActiveObject tgt)
-                        AddEdge(p, tgt);
+                    var t = r.Attributes.GetTopLevel.DocObject;
+                    if (t != null && nodeDict.ContainsKey((IGH_ActiveObject)t))
+                    {
+                        var e = new MsaglLayout.Edge(nodeDict[src], nodeDict[(IGH_ActiveObject)t]);
+                        graph.Edges.Add(e);
+                    }
                 }
             }
-            var vSizes = verts.ToDictionary(
-                v => v,
-                v => new GraphX.Measure.Size(
-                    v.Attributes.Bounds.Width + 100,
-                    v.Attributes.Bounds.Height + 100));
 
-            var vPos = verts.ToDictionary(v => v, v => new GraphX.Measure.Point(v.Attributes.Pivot.X, v.Attributes.Pivot.Y));
-            var lp = new SugiyamaLayoutParameters
+            var nodeSep = 50;
+            var layerSep = 50;
+            var s = new MsaglLayered.SugiyamaLayoutSettings
             {
-                MaxWidth = 100,
-                VerticalGap = 0
+                NodeSeparation = nodeSep,
+                LayerSeparation = layerSep
             };
-            lp.HorizontalGap = 50;
-            lp.DirtyRound = false;
-            lp.MinimizeHierarchicalEdgeLong = true;
-            lp.Simplify = true;
-            lp.Phase1IterationCount = vPos.Count * 3;
-            lp.Phase2IterationCount = vPos.Count * 3;
 
-            var alg = new SugiyamaLayoutAlgorithm<
-                IGH_ActiveObject,
-                Edge<IGH_ActiveObject>,
-                BidirectionalGraph<IGH_ActiveObject, Edge<IGH_ActiveObject>>>(g, vSizes, vPos, lp, edge => EdgeTypes.Hierarchical);
-
-            alg.Compute(new System.Threading.CancellationToken());
-
-            var positions = alg.VertexPositions;
-            var positionsGuids = positions.Keys.Select(i => i.InstanceGuid);
-            var standAloneInstances = g.Vertices.Where(i => !positionsGuids.Contains(i.InstanceGuid)).ToList();
-          
-            var checkY = 0.0;
-            var prevW = 0.0;
-            var sortedPositions = positions.OrderByDescending(i => i.Value.Y).Reverse().ToList();
-            var preX = 0.0;
-            foreach (var kv in sortedPositions)
+            Microsoft.Msagl.Core.Routing.EdgeRoutingSettings edgeSettings = new Microsoft.Msagl.Core.Routing.EdgeRoutingSettings
             {
-                var obj = kv.Key;
-                var center = kv.Value;
-                var x = center.Y;
-                var curW = obj.Attributes.Bounds.Width / 2;
-                if (x > (curW + prevW + checkY + 20))
+                EdgeRoutingMode = Microsoft.Msagl.Core.Routing.EdgeRoutingMode.Rectilinear,
+                ConeAngle = 1,
+                Padding = 3,
+                PolylinePadding = 1.5,
+                CornerRadius = 0,
+                BendPenalty = 0,
+                BundlingSettings = new Microsoft.Msagl.Core.Routing.BundlingSettings
                 {
-                    x = curW + prevW + checkY + 20;
-                    checkY = x;
-                }
-                SetObjectLocation(obj, new PointF((float)x, (float)center.X));
-                if (x <= (curW + prevW + checkY + 20))
+                    CreateUnderlyingPolyline = true,
+                },
+                RoutingToParentConeAngle = 0.52,
+                SimpleSelfLoopsForParentEdgesThreshold = 200,
+                IncrementalRoutingThreshold = 50000000,
+                RouteMultiEdgesAsBundles = true
+
+            };
+
+            var settings = new Microsoft.Msagl.Layout.Layered.SugiyamaLayoutSettings
+            {
+                LayerSeparation = 50,
+                NodeSeparation = 50,
+                PackingMethod = Microsoft.Msagl.Core.Layout.PackingMethod.Compact,
+                LayeringOnly = true,
+                EdgeRoutingSettings = edgeSettings,
+                BrandesThreshold = 600,
+            };
+
+            var layout = new MsaglLayered.LayeredLayout(graph, settings);
+            layout.Run();
+
+            graph.UpdateBoundingBox();
+
+            var left = graph.Left;
+            var bottom = graph.Bottom;
+            var width = graph.Width;
+            var height = graph.Height;
+
+            Func<MsaglGeom.Point, MsaglGeom.Point> toDir = p => new MsaglGeom.Point(height - p.Y, p.X);
+            try
+            {
+                float margin = 30f;
+                foreach (var kv in nodeDict)
                 {
-                    checkY = center.Y;
+                    var obj = kv.Key;
+                    var n = kv.Value;
+
+                    var c0 = n.Center;                            
+                    var c1 = new MsaglGeom.Point(c0.X - left, c0.Y - bottom); 
+                    c1 = toDir(c1);                     
+                    float cx = (float)c1.X + margin;
+                    float cy = (float)c1.Y + margin;
+
+                    var b = obj.Attributes.Bounds;
+                    var newTopLeft = new PointF(cx - b.Width * 0.5f, cy - b.Height * 0.5f);
+
+                    var oldTopLeft = b.Location;
+                    var pivotShift = new SizeF(obj.Attributes.Pivot.X - oldTopLeft.X, obj.Attributes.Pivot.Y - oldTopLeft.Y);
+                    var newPivot = new PointF(newTopLeft.X + pivotShift.Width, newTopLeft.Y + pivotShift.Height);
+
+                    obj.Attributes.Pivot = newPivot;
+                    obj.Attributes.ExpireLayout();
                 }
-                prevW = obj.Attributes.Bounds.Width/2;
-                preX = center.X;
             }
-            
-            foreach (var obj in standAloneInstances)
+            finally
             {
-                SetObjectLocation(obj, new PointF((float)(checkY + prevW + obj.Attributes.Bounds.Width), (float)preX));
-                preX += obj.Attributes.Bounds.Height + 5;
-            }    
-            doc.NewSolution(false);
+                doc.NewSolution(false);
+            }
+
+            Grasshopper.Instances.RedrawCanvas();
+        
         }
+
+
 
         private static GH_PivotAction SetObjectLocation(IGH_ActiveObject obj, PointF pt)
         {

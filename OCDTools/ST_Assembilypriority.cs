@@ -209,6 +209,7 @@ namespace OCD_Tools
             {
 
                 List<IGH_DocumentObject> list = document.SelectedObjects().OfType<IGH_DocumentObject>().ToList();
+                
                 Duplicate.DuplicateComponent(document, list);
                 document.ScheduleSolution(4);
             }
