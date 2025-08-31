@@ -1,6 +1,4 @@
-﻿using GraphX.Logic.Algorithms;
-using GraphX.Logic.Algorithms.LayoutAlgorithms;
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
 using Grasshopper.Kernel.Undo;
@@ -11,10 +9,8 @@ using QuickGraph;
 using QuickGraph.Algorithms.ConnectedComponents;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Windows.Controls.Primitives;
 using Edge = MNCD.Core.Edge;
 using MsaglCurves = Microsoft.Msagl.Core.Geometry.Curves;
 using MsaglGeom = Microsoft.Msagl.Core.Geometry;
@@ -160,6 +156,7 @@ namespace OCD_Tools
                         }
                     }
                 }
+
                 else
                 {
                     var subGraphLayer = new Layer($"Group_{label}");
@@ -194,12 +191,93 @@ namespace OCD_Tools
                     if (subGraphNetwork.Actors.Any())
                     {
                         var louvain = new Louvain();
+                        
                         var communitiesFromSubgraph = louvain.Apply(subGraphNetwork, 100000);
 
                         var clustersFromSubgraph = communitiesFromSubgraph
                             .Select(c => c.Actors.Select(a => id2Guid[subNetworkActorIdToOriginalId[a.Id]]).ToList())
                             .Where(commGuids => commGuids.Count > 1)
                             .ToList();
+
+                        // making directed graph so communities would not make cycles
+                        var originalIdToCommunity = new Dictionary<int, int>();
+                        for (int ci = 0; ci < communitiesFromSubgraph.Count; ci++)
+                        {
+                            foreach (var actor in communitiesFromSubgraph[ci].Actors)
+                            {
+                                int originalId = subNetworkActorIdToOriginalId[actor.Id];
+                                originalIdToCommunity[originalId] = ci;
+                            }
+                        }
+
+                        var directedPairs = new HashSet<(int u, int v)>();
+                        foreach (var p in ghParams)
+                        {
+                            if (!paramTopId.TryGetValue(p, out int pTop)) continue;
+                            if (!componentVertices.Contains(pTop)) continue;
+
+                            foreach (var src in p.Sources)
+                            {
+                                if (!paramTopId.TryGetValue(src, out int sTop)) continue;
+                                if (componentVertices.Contains(sTop) && sTop != pTop)
+                                    directedPairs.Add((sTop, pTop)); // src -> p
+                            }
+
+                            foreach (var rec in p.Recipients)
+                            {
+                                if (!paramTopId.TryGetValue(rec, out int rTop)) continue;
+                                if (componentVertices.Contains(rTop) && pTop != rTop)
+                                    directedPairs.Add((pTop, rTop)); 
+                            }
+                        }
+
+                        var commGraph = new AdjacencyGraph<int, Edge<int>>(true);
+                        int nC = communitiesFromSubgraph.Count;
+                        for (int i = 0; i < nC; i++) commGraph.AddVertex(i);
+
+                        foreach (var (u, v) in directedPairs)
+                        {
+                            if (originalIdToCommunity.TryGetValue(u, out int cu) &&
+                                originalIdToCommunity.TryGetValue(v, out int cv) &&
+                                cu != cv)
+                            {
+                                commGraph.AddEdge(new Edge<int>(cu, cv));
+                            }
+                        }
+
+                        var sccAlg = new StronglyConnectedComponentsAlgorithm<int, Edge<int>>(commGraph);
+                        sccAlg.Compute(); 
+
+                        var sccToCommunities = new Dictionary<int, List<int>>();
+                        foreach (var kv in sccAlg.Components)
+                        {
+                            if (!sccToCommunities.TryGetValue(kv.Value, out var list))
+                            {
+                                list = new List<int>();
+                                sccToCommunities[kv.Value] = list;
+                            }
+                            list.Add(kv.Key);
+                        }
+
+                        var merged = new List<List<Guid>>();
+                        foreach (var commList in sccToCommunities.Values)
+                        {
+                            var glist = new List<Guid>();
+                            foreach (int ci in commList)
+                            {
+                                glist.AddRange(
+                                    communitiesFromSubgraph[ci].Actors
+                                        .Select(a => id2Guid[subNetworkActorIdToOriginalId[a.Id]])
+                                );
+                            }
+                            glist = glist.Distinct().ToList();
+                            if (glist.Count > 1)
+                                merged.Add(glist);
+                        }
+
+                        clustersFromSubgraph = merged;
+
+
 
                         foreach (var commGuids in clustersFromSubgraph)
                         {
@@ -220,13 +298,17 @@ namespace OCD_Tools
                                 record.AddAction(new GH_AddObjectAction(grp));
                                 doc.AddObject(grp, true);
                                 Bestify.Bestifying(doc, new List<GH_Group> { grp });
+                                grp.ObjectsRecursive().ForEach(i => record.AddAction(new GH_GenericObjectAction(i)));
                                 UpdateGroupInLocation(doc, grp);
                             }
                         }
                     }
                 }
-                
+
             }
+
+            if (record.ActionCount > 0)
+                doc.UndoUtil.RecordEvent(record);
 
             UpdateFrozenGroupPosition(doc, frozenGroupIds);
             UpdateGroupsLocation(doc);
@@ -237,37 +319,32 @@ namespace OCD_Tools
             var verts = doc.Objects.OfType<GH_Group>().ToList();
             if (verts.Count == 0) return;
             var dupGroups = verts.SelectMany(i => i.ObjectsRecursive()).OfType<GH_Group>().Select(i => i.InstanceGuid).ToList();
-            //verts = verts.Where(i => !dupGroups.Contains(i.InstanceGuid)).ToList();
+            verts = verts.Where(i => !dupGroups.Contains(i.InstanceGuid)).ToList();
+            verts.ForEach(i => i.ObjectsRecursive().ForEach(j => i.AddObject(j.InstanceGuid)));
 
-            var g = new BidirectionalGraph<GH_Group, Edge<GH_Group>>(true);
-            g.AddVertexRange(verts);
+            var nodeDict = new Dictionary<GH_Group, MsaglLayout.Node>();
+            var graph = new MsaglLayout.GeometryGraph();
 
-            void AddEdge(GH_Group from, GH_Group to)
+            foreach (var o in verts)
             {
-                if (verts.Contains(from) && verts.Contains(to) && from != to)
-                    g.AddEdge(new Edge<GH_Group>(from, to));
-            }
+                var b = o.Attributes.Bounds;
+                var max = Math.Max(Math.Max(10, b.Height), Math.Max(10, b.Width));
 
-            var objToGrousp = verts
-         .SelectMany(grp => grp.Objects()).ToList();
-            var midcheck = verts
-                .SelectMany(grp => grp.ObjectsRecursive().Select(o => (obj: o.InstanceGuid, group: grp))).ToList();
-            var dupes = verts
-    .SelectMany(grp => grp.Objects()
-                      .Select(o => o.InstanceGuid))
-    .GroupBy(id => id)
-    .Where(grp => grp.Count() > 1)
-    .Select(grp => grp.Key)
-    .ToList();
-            var allObjects = verts.SelectMany(grp => grp.ObjectsRecursive().Select(o => (obj: o.InstanceGuid, group: grp))).ToList();
-     var objToGroup = verts
-                .SelectMany(grp => grp.Objects().Select(o => (obj: o.InstanceGuid, group: grp))).GroupBy(id => id.obj)
-                .ToDictionary(t => t.First().obj, t => t.First().group);
-            
+                var sq = MsaglCurves.CurveFactory.CreateRectangle(max, max, new MsaglGeom.Point(0, 0));
+                var n = new MsaglLayout.Node()
+                {
+                    UserData = o,
+                    BoundaryCurve = sq
+                };
+                graph.Nodes.Add(n);
+                nodeDict[o] = n;
+            }
+            var objToGroup = verts
+           .SelectMany(grp => grp.Objects().Select(o => (obj: o.InstanceGuid, group: grp))).GroupBy(id => id.obj)
+           .ToDictionary(t => t.First().obj, t => t.First().group);
             foreach (var grp in verts)
             {
-                var check = grp.ObjectsRecursive()
-                    .OfType<IGH_Param>().ToList();
+
                 var outputs = grp.ObjectsRecursive()
                     .OfType<IGH_Param>()
                     .SelectMany(c => c.Recipients.SelectMany(l => l.Recipients)).ToList();
@@ -276,80 +353,70 @@ namespace OCD_Tools
                 {
                     if (r.Attributes?.Parent?.DocObject is IGH_ActiveObject tgt && objToGroup.TryGetValue(tgt.InstanceGuid, out var tgtGrp))
                     {
-                        AddEdge(grp, tgtGrp);
+                        var e = new MsaglLayout.Edge(nodeDict[grp], nodeDict[tgtGrp]);
+                        graph.Edges.Add(e);
                     }
                 }
             }
 
-            var vSizes = verts.ToDictionary(
-                v => v,
-                v => new GraphX.Measure.Size(
-                    v.Attributes.Bounds.Width + 100,
-                    v.Attributes.Bounds.Height + 100));
-
-            var vPos = verts.ToDictionary(
-                v => v,
-                v => new GraphX.Measure.Point(
-                    v.Attributes.Bounds.X + v.Attributes.Bounds.Width / 2,
-                    v.Attributes.Bounds.Y + v.Attributes.Bounds.Height / 2));
-
-            float pad = 20;
-            var lp = new SugiyamaLayoutParameters
+            var nodeSep = 50;
+            var layerSep = 50;
+            var s = new MsaglLayered.SugiyamaLayoutSettings
             {
-                MaxWidth = 100000,
-                HorizontalGap = pad,
-                VerticalGap = pad,
-                DirtyRound = false,
-                Simplify = true,
-                MinimizeHierarchicalEdgeLong = true,
-                Phase1IterationCount = Math.Max(30, vPos.Count * 2),
-                Phase2IterationCount = Math.Max(30, vPos.Count * 2)
+                NodeSeparation = nodeSep,
+                LayerSeparation = layerSep
             };
 
 
-            var alg = new SugiyamaLayoutAlgorithm<GH_Group, Edge<GH_Group>, BidirectionalGraph<GH_Group, Edge<GH_Group>>>(g, vSizes, vPos, lp, e => EdgeTypes.Hierarchical);
-            alg.Compute(new System.Threading.CancellationToken());
-            
-            var positions = alg.VertexPositions;
-            var groupsInPosition = positions.Select(i => i.Key.InstanceGuid);
-            //X and Y position is different in the algorithm, it is sorting it actually by Rhino's Y instead of X dirction, here ((GraphX)) "y" means "X" in rhino
-            float y = 0;
-            float x = 50;
+            var layout = new MsaglLayered.LayeredLayout(graph, s);
+            layout.Run();
 
-            var standingGroups = g.Vertices.Where(i => !groupsInPosition.Contains(i.InstanceGuid)).ToList();
-            foreach (var grp in standingGroups)
+            graph.UpdateBoundingBox();
+
+            var left = graph.Left;
+            var bottom = graph.Bottom;
+            var width = graph.Width;
+            var height = graph.Height;
+
+            Func<MsaglGeom.Point, MsaglGeom.Point> toDir = p => new MsaglGeom.Point(height - p.Y, p.X);
+
+            try
             {
-                var h = grp.Attributes.Bounds.Height;
-                var w = grp.Attributes.Bounds.Width;
-
-                var delta = new PointF(0, x);
-                foreach (var o in grp.Objects())
+                float margin = 30f;
+                foreach (var kv in nodeDict)
                 {
-                    o.Attributes.Pivot = new PointF(o.Attributes.Pivot.X + delta.X, o.Attributes.Pivot.Y + delta.Y);
-                    o.Attributes.ExpireLayout();
-                }
-                grp.ExpirePreview(true);
-                x += h + 10;
-            }
-            var sortedPositions = positions.OrderByDescending(i => i.Value.Y).Reverse().ToList();
+                    var obj = kv.Key;
+                    var n = kv.Value;
 
-            foreach (var kv in sortedPositions)
+                    var c0 = n.Center;
+                    var c1 = new MsaglGeom.Point(c0.X - left, c0.Y - bottom);
+                    c1 = toDir(c1);
+                    float cx = (float)c1.X + margin;
+                    float cy = (float)c1.Y + margin;
+
+                    var b = obj.Attributes.Bounds;
+                    var newTopLeft = new PointF(cx - b.Width * 0.5f, cy - b.Height * 0.5f);
+
+                    var oldTopLeft = b.Location;
+                    var pivotShift = new SizeF(obj.Attributes.Pivot.X - oldTopLeft.X, obj.Attributes.Pivot.Y - oldTopLeft.Y);
+                    var newPivot = new PointF(newTopLeft.X + pivotShift.Width, newTopLeft.Y + pivotShift.Height);
+                    foreach (var o in obj.Objects())
+                    {
+                        o.Attributes.Pivot = new PointF(o.Attributes.Pivot.X + newPivot.X, o.Attributes.Pivot.Y + newPivot.Y);
+                        o.Attributes.ExpireLayout();
+                    }
+
+                    obj.Attributes.Pivot = newPivot;
+                    obj.Attributes.ExpireLayout();
+                }
+            }
+            finally
             {
-                var grp = kv.Key;
-                var center = kv.Value;
-                var bounds = grp.Attributes.Bounds;
-                y += (float)center.Y;
-                //x += (float)center.X;
-                var delta = new PointF(y , x);
-                foreach (var o in grp.Objects())
-                {
-                    o.Attributes.Pivot = new PointF(o.Attributes.Pivot.X + delta.X, o.Attributes.Pivot.Y + delta.Y);
-                    o.Attributes.ExpireLayout();
-                }
-                grp.ExpirePreview(true);
+                doc.NewSolution(false);
             }
 
-            doc.NewSolution(false);
+            Grasshopper.Instances.RedrawCanvas();
+
         }
 
 
@@ -383,7 +450,7 @@ namespace OCD_Tools
                     foreach (var r in o.Recipients)
                     {
                         var t = r.Attributes.GetTopLevel.DocObject;
-                        if (t != null && nodeDict.ContainsKey((IGH_ActiveObject) t))
+                        if (t != null && nodeDict.ContainsKey((IGH_ActiveObject)t))
                         {
                             var e = new MsaglLayout.Edge(nodeDict[src], nodeDict[(IGH_ActiveObject)t]);
                             graph.Edges.Add(e);
@@ -419,13 +486,7 @@ namespace OCD_Tools
                 }
             }
 
-            var nodeSep = 50;
-            var layerSep = 50;
-            var s = new MsaglLayered.SugiyamaLayoutSettings
-            {
-                NodeSeparation = nodeSep,
-                LayerSeparation = layerSep
-            };
+
 
             Microsoft.Msagl.Core.Routing.EdgeRoutingSettings edgeSettings = new Microsoft.Msagl.Core.Routing.EdgeRoutingSettings
             {
@@ -475,9 +536,9 @@ namespace OCD_Tools
                     var obj = kv.Key;
                     var n = kv.Value;
 
-                    var c0 = n.Center;                            
-                    var c1 = new MsaglGeom.Point(c0.X - left, c0.Y - bottom); 
-                    c1 = toDir(c1);                     
+                    var c0 = n.Center;
+                    var c1 = new MsaglGeom.Point(c0.X - left, c0.Y - bottom);
+                    c1 = toDir(c1);
                     float cx = (float)c1.X + margin;
                     float cy = (float)c1.Y + margin;
 
@@ -494,11 +555,28 @@ namespace OCD_Tools
             }
             finally
             {
+                var minX = nodeDict.Keys.Min(i => i.Attributes.Pivot.X);
+                var maxX = nodeDict.Keys.Max(i => i.Attributes.Pivot.X);
+                var inputs = nodeDict.Keys.OfType<Param_GenericObject>().Where(i => !i.Sources.Any(j => nodeDict.ContainsKey((IGH_ActiveObject) j.Attributes.GetTopLevel.DocObject)));
+                var outputs = nodeDict.Keys.OfType<Param_GenericObject>().Where(i => !i.Recipients.Any(j => nodeDict.ContainsKey((IGH_ActiveObject)j.Attributes.GetTopLevel.DocObject)));
+                foreach (var i in inputs)
+                {
+                    var newPivot = new PointF(minX, i.Attributes.Pivot.Y);
+                    i.Attributes.Pivot = newPivot;
+                    i.Attributes.ExpireLayout();
+                }
+                foreach (var o in outputs)
+                {
+                    var newPivot = new PointF(maxX, o.Attributes.Pivot.Y);
+                    o.Attributes.Pivot = newPivot;
+                    o.Attributes.ExpireLayout();
+                }
+
                 doc.NewSolution(false);
             }
 
             Grasshopper.Instances.RedrawCanvas();
-        
+
         }
 
 
@@ -523,7 +601,7 @@ namespace OCD_Tools
             return ghPivotAction;
         }
 
-        private static void UpdateFrozenGroupPosition(GH_Document doc,HashSet<Guid> frozenGroupIds)
+        private static void UpdateFrozenGroupPosition(GH_Document doc, HashSet<Guid> frozenGroupIds)
         {
             var grps = doc.Objects.OfType<GH_Group>().ToList();
             grps = grps.Where(i => frozenGroupIds.Contains(i.InstanceGuid)).ToList();
@@ -534,7 +612,7 @@ namespace OCD_Tools
             var ids = grps.SelectMany(i => i.Objects()).OfType<GH_Group>().Select(i => i.InstanceGuid).ToList();
             grps = grps.Where(i => !ids.Contains(i.InstanceGuid)).ToList();
 
-            
+
             foreach (var g in grps)
             {
                 var bounds = g.Attributes.Bounds;

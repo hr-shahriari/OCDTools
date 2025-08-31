@@ -1,15 +1,8 @@
 ﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Undo.Actions;
-using Grasshopper.Kernel.Undo;
-using System;
+using OCD_Tools.Components;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Xml.Linq;
-using OCD_Tools.Components;
 
 namespace OCD_Tools
 {
@@ -44,30 +37,30 @@ namespace OCD_Tools
                         //Get the location of the param
                         var paramPivot = param.Attributes.Pivot;
                         //set the location of the new component to behind 
-                        gH_Merge.Attributes.Pivot = new System.Drawing.PointF(paramPivot.X - (bounds.Width + 10), (item.Attributes.Pivot.Y + height)-bounds.Height);
+                        gH_Merge.Attributes.Pivot = new System.Drawing.PointF(paramPivot.X - (bounds.Width + 10), (item.Attributes.Pivot.Y + height) - bounds.Height);
 
-    
+
                         GH_WireAction ghWireAction = new GH_WireAction(param);
                         //Add the removed source action to the undo stack
                         GrasshopperDocument.UndoUtil.RecordWireEvent("Wire", param);
                         //Disconnect the inputs from the old component
                         param.RemoveAllSources();
-                       
+
                         //Connect the output to the input of the original component
                         param.AddSource(gH_Merge.Params.Output[0]);
                         //add the new component to the undo stack
                         GrasshopperDocument.UndoUtil.RecordAddObjectEvent(nameof(MergeInputs), gH_Merge);
                         //Check the height of the component and add it to the height parameter
                         height += gH_Merge.Attributes.Bounds.Height + (12 * gH_Merge.Params.Count());
-                        
+
                         //Expire the component
                         item.ExpireSolution(true);
                         //Save the record event
-                        
+
                     }
                 }
-                
-                
+
+
 
             }
         }

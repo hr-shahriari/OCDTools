@@ -1,8 +1,8 @@
 ﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Parameters;
+using Grasshopper.Kernel.Special;
 using System.Collections.Generic;
 using System.Linq;
-using Grasshopper.Kernel.Special;
-using Grasshopper.Kernel.Parameters;
 
 namespace OCD_Tools
 {
@@ -45,15 +45,15 @@ namespace OCD_Tools
                     param.ExpirePreview(true);
                     param.Locked = relay.Locked;
                     document.ExpirePreview(true);
-                    
+
                 }
             }
 
             document.ExpirePreview(true);
-          
-            
+
+
 
         }
-        
+
     }
 }

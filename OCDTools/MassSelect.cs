@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Windows.Forms;
-using System.Drawing;
-using Grasshopper;
+﻿using Grasshopper;
 using Grasshopper.Kernel;
-using System;
-using System.Linq;
-using Point = System.Drawing.Point;
-using Grasshopper.Kernel.Undo.Actions;
-using Grasshopper.Kernel.Undo;
 using Grasshopper.Kernel.Parameters;
+using Grasshopper.Kernel.Undo;
+using Grasshopper.Kernel.Undo.Actions;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
+using Point = System.Drawing.Point;
 
 internal class MassSelect
 {
@@ -46,7 +46,7 @@ internal class MassSelect
             // Find the mouse cursor position
             var mousePosition = Instances.ActiveCanvas.CursorCanvasPosition;
             var findAttr = GrasshopperDocument.FindAttribute(mousePosition, false);
-            
+
             var findGrip = GrasshopperDocument.FindAttributeByGrip(mousePosition, false, false, true);
             IGH_Attributes selectedParam = null;
             if (findAttr != null)
@@ -81,7 +81,7 @@ internal class MassSelect
             shiftWasUp = true;
             itemAdded = false;
         }
-        else if(isShiftKeyDown && itemAdded)
+        else if (isShiftKeyDown && itemAdded)
         {
             shiftWasUp = false;
         }
@@ -92,7 +92,7 @@ internal class MassSelect
         {
             var mousePosition = Instances.ActiveCanvas.CursorCanvasPosition;
             var inputParam = (IGH_Param)GrasshopperDocument.FindAttributeByGrip(mousePosition, false, true, false).DocObject;
-            
+
             if (inputParam != null)
             {
 
@@ -143,7 +143,7 @@ internal class MassSelect
         {
             AddParam();
         }
-                
+
     }
 
     private static void KillProcess()
@@ -186,8 +186,8 @@ internal class MassSelect
                 _label.BorderStyle = BorderStyle.Fixed3D;
                 _label.RightToLeft = RightToLeft.Yes;
                 _label.BackColor = Color.Gray;
-                _label.Margin= new Padding(5);
-                _label.UseMnemonic= true;
+                _label.Margin = new Padding(5);
+                _label.UseMnemonic = true;
                 _form.Controls.Add(_label);
 
                 _form.Show((IWin32Window)Instances.DocumentEditor);
@@ -229,7 +229,7 @@ internal class MassSelect
     {
         GrasshopperDocument.UndoUtil.RecordEvent("addParam event");
         var position = Instances.ActiveCanvas.CursorCanvasPosition;
-        GH_DocumentIO ghDocIO= new GH_DocumentIO();
+        GH_DocumentIO ghDocIO = new GH_DocumentIO();
         ghDocIO.Document = new GH_Document();
         foreach (var param in selectedParams)
         {
@@ -248,15 +248,15 @@ internal class MassSelect
         ghDocIO.Document.MutateAllIds();
         var objects = ghDocIO.Document.Objects;
         GrasshopperDocument.UndoUtil.RecordAddObjectEvent("addParam event", objects);
-        
+
         GrasshopperDocument.MergeDocument(ghDocIO.Document);
         Instances.InvalidateCanvas();
         Instances.RedrawCanvas();
-        
+
 
 
         KillProcess();
-        
+
     }
 
     private class TransparentForm : Form

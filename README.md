@@ -37,3 +37,22 @@ OCD Tools is a set of tools for Grasshopper to help users easily and quickly org
 
 ## Want to Help or Have Issues?
 If you have ideas or find something wrong, please share them on GitHub. You can write about your problem or even help to make the tools better.
+
+## Contributing
+If you would like to contribute, please **fork** the repository and open a **pull request** with your changes.  
+Bug reports and feature requests are also encouraged through the [GitHub Issues](../../issues) page.
+
+### Development Dependencies
+This project relies on the following libraries:
+
+- [QuickGraph](https://github.com/KeRNeLith/QuickGraph)
+- [MSAGL (Microsoft Automatic Graph Layout)](https://github.com/microsoft/automatic-graph-layout)
+
+### Custom MNCD Build
+The plugin depends on a **custom build of MNCD**.  
+Please use the following build to ensure compatibility:
+
+🔗 [Custom MNCD Build](https://github.com/hr-shahriari/mncd)
+
+Clone and build this repository locally, and reference its output in your development environment before compiling this plugin.
+

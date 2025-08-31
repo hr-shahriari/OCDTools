@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using OCD_Tools.Properties;
-using Rhino.Geometry;
+using System;
+using System.Collections.Generic;
 
 namespace OCD_Tools.Components
 {

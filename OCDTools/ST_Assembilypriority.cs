@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
-using Grasshopper;
+﻿using Grasshopper;
 using Grasshopper.GUI;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Forms;
 
 
 namespace OCD_Tools
@@ -31,8 +29,8 @@ namespace OCD_Tools
             return GH_LoadingInstruction.Proceed;
         }
 
-       
-        
+
+
 
 
         private void RegisterNewMenuItems(GH_Canvas canvas)
@@ -137,6 +135,7 @@ namespace OCD_Tools
                 ReplaceRelay.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.R;
                 addToGroup.ShortcutKeys = Keys.Alt | Keys.G;
                 bestify.ShortcutKeys = Keys.Alt | Keys.B;
+                gep1.ShortcutKeys = Keys.Shift | Keys.Alt | Keys.B;
                 list.Add(duplicateGroup);
                 list.Add(duplicateComponent);
                 list.Add(mergedInputs);
@@ -209,7 +208,7 @@ namespace OCD_Tools
             {
 
                 List<IGH_DocumentObject> list = document.SelectedObjects().OfType<IGH_DocumentObject>().ToList();
-                
+
                 Duplicate.DuplicateComponent(document, list);
                 document.ScheduleSolution(4);
             }
@@ -229,7 +228,7 @@ namespace OCD_Tools
             }
             else
             {
-                
+
                 List<IGH_Component> list = document.SelectedObjects().OfType<IGH_Component>().ToList();
                 MergeInputs.Merge(document, list);
                 document.ScheduleSolution(4);
@@ -243,7 +242,7 @@ namespace OCD_Tools
             if (document.SelectedObjects().Count == 0)
             {
                 int num = (int)MessageBox.Show("To use this feature, first select components.");
-                
+
             }
             else
             {
@@ -290,11 +289,11 @@ namespace OCD_Tools
             }
             else
             {
-                List<IGH_DocumentObject> list = 
+                List<IGH_DocumentObject> list =
                     document.SelectedObjects()
                     .Cast<IGH_DocumentObject>()
                     .ToList();
-                ChangeName.ChangeNameOfObjectFromSources(document,list);
+                ChangeName.ChangeNameOfObjectFromSources(document, list);
                 document.ScheduleSolution(4);
             }
         }
@@ -309,7 +308,7 @@ namespace OCD_Tools
             else
             {
                 List<IGH_DocumentObject> list = document.SelectedObjects().Cast<IGH_DocumentObject>().ToList();
-                ChangeName.ChangeNameOfObjectFromRecipents(document,list);
+                ChangeName.ChangeNameOfObjectFromRecipents(document, list);
                 document.ScheduleSolution(4);
             }
         }
@@ -346,7 +345,6 @@ namespace OCD_Tools
             }
             catch (Exception)
             {
-                //do nothing
             }
 
         }

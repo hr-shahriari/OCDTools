@@ -1,14 +1,10 @@
-﻿using Grasshopper.Kernel.Special;
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Special;
+using Grasshopper.Kernel.Undo;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Grasshopper.Kernel.Undo;
 using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using Grasshopper.Kernel.Data;
-using Grasshopper.Kernel.Types;
+using System.Linq;
 
 namespace OCD_Tools
 {
@@ -126,7 +122,7 @@ namespace OCD_Tools
             //Check if the input sources are not within the selection, remove them from the selected components
             foreach (IGH_Component ighComponent in (objects.OfType<IGH_Component>().ToList<IGH_Component>()))
             {
-        
+
                 paramsList.AddRange((IEnumerable<IGH_Param>)ighComponent.Params.Input);
                 foreach (var input in ighComponent.Params.Input)
                 {

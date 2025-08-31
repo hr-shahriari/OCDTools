@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using GH_IO.Serialization;
+﻿using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Undo;
+using System;
+using System.Collections.Generic;
 
 public class MyCustomUndoAction : IGH_UndoAction
 {

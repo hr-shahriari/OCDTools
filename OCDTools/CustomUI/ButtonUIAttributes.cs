@@ -1,12 +1,12 @@
 ﻿//Source of this code: https://github.com/arup-group/Custom-Grasshopper-UI-Components/blob/main/CustomGhComponents/CustomUI/ButtonUIAttributes.cs
 
-using Grasshopper.Kernel.Attributes;
-using Grasshopper.GUI.Canvas;
 using Grasshopper.GUI;
+using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Attributes;
 using System;
-using System.Drawing;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Drawing2D;
 
 namespace CustomUI
