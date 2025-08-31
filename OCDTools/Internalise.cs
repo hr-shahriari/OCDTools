@@ -34,10 +34,10 @@ namespace OCD_Tools
                 {
                     flattenedString += System.Environment.NewLine;
                 }
-                
+
             }
             return flattenedString;
         }
     }
-    
+
 }

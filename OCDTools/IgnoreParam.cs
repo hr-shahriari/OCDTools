@@ -2,9 +2,6 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using System.Text;
-using Grasshopper.Kernel;
-using System;
 
 namespace OCD_Tools
 {
@@ -61,7 +58,7 @@ namespace OCD_Tools
             }
         }
 
-        
+
 
     }
 

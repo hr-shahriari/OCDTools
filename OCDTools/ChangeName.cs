@@ -1,12 +1,8 @@
 ﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
-using Grasshopper.Kernel.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OCD_Tools
 {
@@ -18,17 +14,17 @@ namespace OCD_Tools
             grasshopperDocument.UndoUtil.RecordEvent(nameof(ChangeNameOfObjectFromSources));
             var record = new Grasshopper.Kernel.Undo.GH_UndoRecord();
             var panels = objects.OfType<GH_Panel>();
-            var filteredList = objects.Where(item => IsDerivedFromGH_PersistentParam(item.GetType())).ToList(); 
+            var filteredList = objects.Where(item => IsDerivedFromGH_PersistentParam(item.GetType())).ToList();
             foreach (var obj in filteredList)
             {
-                
+
                 var castObject = (IGH_Param)obj;
                 if (castObject.Sources.Count == 0)
                 {
                     continue;
                 }
                 var sourceName = castObject.Sources[0].NickName;
-                var action = new NameUndoAction(obj,castObject.NickName, sourceName);
+                var action = new NameUndoAction(obj, castObject.NickName, sourceName);
                 castObject.NickName = sourceName;
                 castObject.Attributes.ExpireLayout();
                 record.AddAction(action);
@@ -116,7 +112,7 @@ namespace OCD_Tools
             }
             foreach (var toggle in toggles)
             {
-                if (toggle.Recipients.Count==0)
+                if (toggle.Recipients.Count == 0)
                 {
                     continue;
                 }

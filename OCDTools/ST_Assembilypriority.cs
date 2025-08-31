@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
-using Grasshopper;
+﻿using Grasshopper;
 using Grasshopper.GUI;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Forms;
 
 
 namespace OCD_Tools
@@ -31,8 +29,8 @@ namespace OCD_Tools
             return GH_LoadingInstruction.Proceed;
         }
 
-       
-        
+
+
 
 
         private void RegisterNewMenuItems(GH_Canvas canvas)
@@ -85,6 +83,7 @@ namespace OCD_Tools
         ToolStripMenuItem CumulativeOutputSelector;
         ToolStripMenuItem addToGroup;
         ToolStripMenuItem bestify;
+        ToolStripMenuItem gep1;
 
         private List<ToolStripMenuItem> OCDMenuItems
         {
@@ -106,6 +105,7 @@ namespace OCD_Tools
                 CumulativeOutputSelector = new ToolStripMenuItem("Cumulative Output Selector");
                 addToGroup = new ToolStripMenuItem("Add To Groups");
                 bestify = new ToolStripMenuItem("Bestify");
+                gep1 = new ToolStripMenuItem("GEP1");
                 // Assign event handlers for the menu items 
                 duplicateGroup.Click += new EventHandler(this.DuplicateGroup_Click);
                 duplicateComponent.Click += new EventHandler(this.DuplicateComponent_Click);
@@ -121,6 +121,7 @@ namespace OCD_Tools
                 CumulativeOutputSelector.Click += new EventHandler(this.CumulativeOutputSelector_Click);
                 addToGroup.Click += new EventHandler(this.AddToGroup_Click);
                 bestify.Click += new EventHandler(this.Bestify_Click);
+                gep1.Click += new EventHandler(this.GEP1_Click);
 
                 duplicateGroup.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.D;
                 duplicateComponent.ShortcutKeys = Keys.Alt | Keys.D;
@@ -134,6 +135,7 @@ namespace OCD_Tools
                 ReplaceRelay.ShortcutKeys = Keys.Alt | Keys.Shift | Keys.R;
                 addToGroup.ShortcutKeys = Keys.Alt | Keys.G;
                 bestify.ShortcutKeys = Keys.Alt | Keys.B;
+                gep1.ShortcutKeys = Keys.Shift | Keys.Alt | Keys.B;
                 list.Add(duplicateGroup);
                 list.Add(duplicateComponent);
                 list.Add(mergedInputs);
@@ -148,6 +150,7 @@ namespace OCD_Tools
                 list.Add(ReplaceRelay);
                 list.Add(addToGroup);
                 list.Add(bestify);
+                list.Add(gep1);
                 return list;
             }
         }
@@ -205,6 +208,7 @@ namespace OCD_Tools
             {
 
                 List<IGH_DocumentObject> list = document.SelectedObjects().OfType<IGH_DocumentObject>().ToList();
+
                 Duplicate.DuplicateComponent(document, list);
                 document.ScheduleSolution(4);
             }
@@ -224,7 +228,7 @@ namespace OCD_Tools
             }
             else
             {
-                
+
                 List<IGH_Component> list = document.SelectedObjects().OfType<IGH_Component>().ToList();
                 MergeInputs.Merge(document, list);
                 document.ScheduleSolution(4);
@@ -238,7 +242,7 @@ namespace OCD_Tools
             if (document.SelectedObjects().Count == 0)
             {
                 int num = (int)MessageBox.Show("To use this feature, first select components.");
-                
+
             }
             else
             {
@@ -285,11 +289,11 @@ namespace OCD_Tools
             }
             else
             {
-                List<IGH_DocumentObject> list = 
+                List<IGH_DocumentObject> list =
                     document.SelectedObjects()
                     .Cast<IGH_DocumentObject>()
                     .ToList();
-                ChangeName.ChangeNameOfObjectFromSources(document,list);
+                ChangeName.ChangeNameOfObjectFromSources(document, list);
                 document.ScheduleSolution(4);
             }
         }
@@ -304,7 +308,7 @@ namespace OCD_Tools
             else
             {
                 List<IGH_DocumentObject> list = document.SelectedObjects().Cast<IGH_DocumentObject>().ToList();
-                ChangeName.ChangeNameOfObjectFromRecipents(document,list);
+                ChangeName.ChangeNameOfObjectFromRecipents(document, list);
                 document.ScheduleSolution(4);
             }
         }
@@ -341,7 +345,6 @@ namespace OCD_Tools
             }
             catch (Exception)
             {
-                //do nothing
             }
 
         }
@@ -377,6 +380,15 @@ namespace OCD_Tools
                 Bestify.Bestifying(document, list);
                 document.ScheduleSolution(4);
             }
+        }
+
+        public void GEP1_Click(object sender, EventArgs e)
+        {
+            GH_Document document = Instances.ActiveCanvas.Document;
+            GEP1.Auto_GEP(document);
+            //GEP1.ExecuteFullAutoGroupAndArrange(document);
+
+
         }
         public GH_DocumentEditor.AggregateShortcutMenuItemsEventHandler handleThis { get; set; }
     }

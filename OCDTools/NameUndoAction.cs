@@ -2,10 +2,6 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Undo;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OCD_Tools
 {

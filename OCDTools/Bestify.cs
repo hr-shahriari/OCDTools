@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using Grasshopper;
+﻿using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
-using Grasshopper.Kernel.Undo.Actions;
 using Grasshopper.Kernel.Undo;
+using Grasshopper.Kernel.Undo.Actions;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 
 namespace OCD_Tools
 {
@@ -39,7 +39,7 @@ namespace OCD_Tools
 
                 group.ExpireCaches();
                 group.ExpirePreview(true);
-                
+
             }
 
             RefreshCanvas(doc, record);

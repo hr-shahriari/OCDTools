@@ -1,10 +1,7 @@
 ﻿using Grasshopper.Kernel;
-using System;
+using Grasshopper.Kernel.Special;
 using System.Collections.Generic;
 using System.Linq;
-using GH_IO.Serialization;
-using Grasshopper.Kernel;
-using Grasshopper.Kernel.Special;
 
 namespace OCD_Tools
 {
@@ -31,7 +28,7 @@ namespace OCD_Tools
                     objects.Add(obj);
                 }
             }
-            // Check if the pivot point of the object is in the bound of any of the groups if so add the object to that group
+            // checking if the pivot point of the object is in the bound of any of the groups if so add the object to that group
             foreach (var obj in objects)
             {
                 foreach (var group in Groups)

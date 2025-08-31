@@ -1,13 +1,8 @@
-﻿using System;
+﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Grasshopper.Kernel;
-using Grasshopper.Kernel.Data;
-using Grasshopper.Kernel.Parameters;
-using Grasshopper.Kernel.Types;
 
 namespace OCD_Tools
 {
@@ -18,7 +13,7 @@ namespace OCD_Tools
 
             if (component is IGH_VariableParameterComponent variableParameterComponent)
             {
-                
+
                 int numberOfInputs = component.Params.Input.Count;
                 if (numberOfInputs < numberOfSources)
                 {

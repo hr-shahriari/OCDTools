@@ -1,10 +1,6 @@
-﻿using Grasshopper.Kernel.Special;
-using Grasshopper.Kernel;
-using System;
+﻿using Grasshopper.Kernel;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OCD_Tools
 {
@@ -16,7 +12,7 @@ namespace OCD_Tools
             grasshopperDocument.UndoUtil.RecordEvent(nameof(UpdateParamObjectIconDisplay));
             Grasshopper.Kernel.Undo.GH_UndoRecord record = new Grasshopper.Kernel.Undo.GH_UndoRecord();
             var filteredList = objects.Where(item => ChangeName.IsDerivedFromGH_PersistentParam(item.GetType())).ToList();
-            foreach ( var item in filteredList )
+            foreach (var item in filteredList)
             {
                 Grasshopper.Kernel.Undo.Actions.GH_IconDisplayAction action = new Grasshopper.Kernel.Undo.Actions.GH_IconDisplayAction(item);
                 record.AddAction(action);

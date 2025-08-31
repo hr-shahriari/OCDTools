@@ -1,5 +1,4 @@
-﻿using Grasshopper;
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Undo.Actions;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,14 +17,14 @@ namespace OCD_Tools
             List<IGH_DocumentObject> sortedList = list.OrderBy(x => x.Attributes.Pivot.X).ToList();
 
             //Take the last component on the right handside and do the UpdateNumberOfInputs method based on the number of outputs from the left handside components
-            var lastComponent = (GH_Component) sortedList.Last();
+            var lastComponent = (GH_Component)sortedList.Last();
             var newList = sortedList.Take(sortedList.Count - 1).ToList();
             IEnumerable<IGH_DocumentObject> iNewSortedList = newList.OfType<IGH_ActiveObject>();
             //take the sum of the number of the outputs from the newlist
 
             List<IGH_Param> paramList = iNewSortedList.OfType<IGH_Param>().ToList();
             //Make a list from paramList from IGH_params that are output
-            
+
             foreach (IGH_Component ighComponent in (newList.OfType<IGH_Component>().ToList()))
             {
                 //make a list of all of the output params
@@ -62,7 +61,7 @@ namespace OCD_Tools
             //Record the event
             GrasshopperDocument.UndoUtil.RecordEvent(nameof(MassConnect));
             //Connect the outputs params of the newlist to the inputs params of the last component
-            for (int i =0; i < orderedList.Count; i++)
+            for (int i = 0; i < orderedList.Count; i++)
             {
                 var param = orderedList[i];
 
@@ -72,7 +71,7 @@ namespace OCD_Tools
                 GrasshopperDocument.UndoUtil.RecordWireEvent("WireInput", lastComponent.Params.Input[i]);
                 var targetParam = lastComponent.Params.Input[i];
                 targetParam.AddSource(param);
-                                
+
             }
             lastComponent.ExpireSolution(true);
 
@@ -108,7 +107,7 @@ namespace OCD_Tools
             }
 
             //Take the number of the inputs of the last component that already have a source and calculate the additional number of sources needed
-            int numberOfSources = paramList.Count+ lastComponent.Params.Input.Where(x => x.Sources.Count > 0).Count();
+            int numberOfSources = paramList.Count + lastComponent.Params.Input.Where(x => x.Sources.Count > 0).Count();
 
             //order paramList based on the Y property of the location of the param
             List<IGH_Param> sortedParamList = paramList.OrderBy(x => x.Attributes.Pivot.Y).ToList();
